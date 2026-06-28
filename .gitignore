@@ -16,6 +16,9 @@ dist-ssr/
 # Vercel
 .vercel
 
+# Playwright MCP artifacts
+.playwright-mcp/
+
 # Supabase local
 supabase/.branches
 supabase/.temp
