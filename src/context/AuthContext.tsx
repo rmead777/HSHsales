@@ -85,11 +85,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Fetch profile whenever the signed-in user changes.
+  // Fetch profile whenever the signed-in user changes. Wait for initial auth resolution
+  // so a stored session does not briefly look like a fetched, inactive null profile.
   useEffect(() => {
     setProfileFetched(false)
+    if (authLoading) return
     void fetchProfile(userId)
-  }, [userId, fetchProfile])
+  }, [authLoading, userId, fetchProfile])
 
   // Cheap freshness: refetch profile (the activation gate) on focus + tab visibility.
   useEffect(() => {

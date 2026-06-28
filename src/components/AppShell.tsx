@@ -21,7 +21,7 @@ const repTabs: Tab[] = [
   { to: '/qr', label: 'QR Codes', icon: QrCode },
 ]
 
-/** Rep-facing chrome: glass header + animated glass bottom nav, content in the Outlet. */
+/** Rep-facing chrome: compact arcade console for fast field selling. */
 export function AppShell() {
   const { profile, isAdmin, signOut } = useAuth()
   const navigate = useNavigate()
@@ -37,14 +37,15 @@ export function AppShell() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col">
+    <div className="relative mx-auto flex min-h-dvh max-w-xl flex-col">
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-1 marquee-strip" aria-hidden />
       <Header
         repCode={profile?.rep_code ?? null}
         name={profile?.full_name ?? profile?.email ?? null}
         onSignOut={handleSignOut}
       />
 
-      <main className="flex-1 px-4 pt-4 pb-safe-nav">
+      <main className="flex-1 px-4 pt-4 pb-safe-nav sm:px-5">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -57,8 +58,11 @@ export function AppShell() {
         </AnimatePresence>
       </main>
 
-      <nav className="glass-nav fixed inset-x-0 bottom-0 z-40 pb-safe">
-        <div className="mx-auto flex max-w-xl items-stretch justify-around px-2 py-2">
+      <nav className="glass-nav fixed inset-x-0 bottom-0 z-40 border-t border-white/10 pb-safe">
+        <div
+          className="mx-auto grid max-w-xl gap-2 px-3 py-2"
+          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        >
           {tabs.map((t) => (
             <NavTab key={t.to} tab={t} />
           ))}
@@ -78,15 +82,17 @@ function Header({
   onSignOut: () => void
 }) {
   return (
-    <header className="glass-nav sticky top-0 z-30 pt-safe">
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
+    <header className="glass-nav sticky top-0 z-30 border-b border-white/10 pt-safe">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <BrandMark className="size-9 shrink-0 drop-shadow-sm" />
+          <BrandMark className="size-10 shrink-0 drop-shadow-[0_14px_26px_rgba(46,234,255,0.22)]" />
           <div className="min-w-0 leading-tight">
-            <p className="font-display text-[0.95rem] font-bold tracking-[-0.02em] text-slate-900">
+            <p className="font-display text-base font-extrabold tracking-[-0.03em] text-chrome">
               High Score Host
             </p>
-            {name && <p className="truncate text-xs text-slate-400">{name}</p>}
+            <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-white/38">
+              {name ?? 'Rep console'}
+            </p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -94,7 +100,7 @@ function Header({
           <button
             onClick={onSignOut}
             aria-label="Sign out"
-            className="grid size-10 place-items-center rounded-full text-slate-500 transition hover:bg-slate-900/5"
+            className="grid size-10 place-items-center rounded-full text-white/50 transition hover:bg-white/[0.08] hover:text-white"
           >
             <LogOut className="size-5" />
           </button>
@@ -114,8 +120,8 @@ function RepCodeBadge({ code }: { code: string }) {
         const r = await copyText(code)
         show(r === 'failed' ? 'Could not copy' : 'Rep code copied', r === 'failed' ? 'error' : 'success')
       }}
-      className="rounded-full bg-primary-50 px-3 py-1.5 font-mono text-xs font-semibold tracking-wide text-primary-700 ring-1 ring-inset ring-primary-200 tnum"
-      title="Your rep code — tap to copy"
+      className="rounded-full border border-demo-300/25 bg-demo-400/12 px-3 py-1.5 font-mono text-xs font-bold tracking-wide text-demo-100 shadow-[0_10px_26px_-18px_rgba(46,234,255,0.9)] tnum"
+      title="Your rep code - tap to copy"
     >
       {code}
     </motion.button>
@@ -128,7 +134,7 @@ function NavTab({ tab }: { tab: Tab }) {
     <NavLink
       to={to}
       end={end}
-      className="relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5"
+      className="relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-[8px] py-1.5"
     >
       {({ isActive }) => (
         <>
@@ -136,19 +142,19 @@ function NavTab({ tab }: { tab: Tab }) {
             <motion.span
               layoutId="rep-nav-pill"
               transition={springs.standardFunctional}
-              className="absolute inset-0 rounded-2xl bg-primary-500/10"
+              className="absolute inset-0 rounded-[8px] bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_26px_-20px_rgba(46,234,255,0.9)]"
             />
           )}
           <Icon
             className={cn(
               'relative size-6 transition-colors',
-              isActive ? 'text-primary-600' : 'text-slate-400',
+              isActive ? 'text-demo-300' : 'text-white/34',
             )}
           />
           <span
             className={cn(
-              'relative text-[0.65rem] font-semibold tracking-tight',
-              isActive ? 'text-primary-700' : 'text-slate-400',
+              'relative text-[0.65rem] font-bold tracking-[0.02em]',
+              isActive ? 'text-white' : 'text-white/38',
             )}
           >
             {label}

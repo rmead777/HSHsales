@@ -7,22 +7,28 @@ import { Spinner } from './Spinner'
 type Variant = 'primary' | 'money' | 'demo' | 'danger' | 'subtle' | 'outline' | 'ghost'
 type Size = 'sm' | 'md' | 'lg'
 
-// Filled variants carry an accent-tinted shadow (never gray) so the CTA feels lifted.
+// Filled variants carry accent-tinted shadows so CTAs feel lifted, never default.
 const variants: Record<Variant, string> = {
-  primary: 'bg-primary-500 text-white shadow-[0_10px_28px_-10px_rgba(47,107,255,0.65)] hover:bg-primary-600',
-  money: 'bg-money-500 text-white shadow-[0_10px_28px_-10px_rgba(16,185,129,0.6)] hover:bg-money-600',
-  demo: 'bg-demo-500 text-white shadow-[0_10px_28px_-10px_rgba(6,182,212,0.55)] hover:bg-demo-600',
-  danger: 'bg-danger-500 text-white shadow-[0_10px_28px_-10px_rgba(244,63,94,0.55)] hover:bg-danger-600',
-  subtle: 'bg-primary-50 text-primary-700 hover:bg-primary-100',
-  outline: 'border border-slate-200/80 bg-white/55 text-slate-700 hover:bg-white/80',
-  ghost: 'text-slate-600 hover:bg-slate-900/[0.06]',
+  primary:
+    'bg-primary-500 text-white shadow-[0_12px_32px_-14px_rgba(75,34,255,0.9)] hover:bg-primary-400',
+  money:
+    'bg-money-500 text-[#03110c] shadow-[0_12px_32px_-14px_rgba(0,201,139,0.9)] hover:bg-money-400',
+  demo:
+    'bg-demo-400 text-[#031014] shadow-[0_12px_32px_-14px_rgba(46,234,255,0.9)] hover:bg-demo-300',
+  danger:
+    'bg-danger-500 text-white shadow-[0_12px_32px_-14px_rgba(255,36,72,0.85)] hover:bg-danger-400',
+  subtle:
+    'border border-white/10 bg-white/[0.08] text-white shadow-[0_10px_24px_-18px_rgba(46,234,255,0.75)] hover:bg-white/[0.13]',
+  outline:
+    'border border-white/15 bg-white/[0.04] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-demo-400/45 hover:bg-demo-400/10',
+  ghost: 'text-white/72 hover:bg-white/[0.08] hover:text-white',
 }
 
 // md = 44px (the iOS minimum touch target); lg = 56px for primary field actions.
 const sizes: Record<Size, string> = {
-  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-xl',
-  md: 'h-11 px-4 text-[0.95rem] gap-2 rounded-2xl',
-  lg: 'h-14 px-5 text-base gap-2.5 rounded-2xl',
+  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-[8px]',
+  md: 'h-11 px-4 text-[0.95rem] gap-2 rounded-[8px]',
+  lg: 'h-14 px-5 text-base gap-2.5 rounded-[8px]',
 }
 
 export interface ButtonProps extends HTMLMotionProps<'button'> {
@@ -52,8 +58,8 @@ export function Button({
       whileTap={isDisabled ? undefined : { scale: 0.97 }}
       transition={springs.press}
       className={cn(
-        'relative inline-flex select-none items-center justify-center font-semibold tracking-[-0.01em]',
-        'transition-colors duration-150 will-change-transform',
+        'relative inline-flex select-none items-center justify-center font-bold tracking-[0.01em]',
+        'transition-colors duration-150 will-change-transform [&_svg]:-mt-px [&_svg]:shrink-0',
         sizes[size],
         variants[variant],
         fullWidth && 'w-full',

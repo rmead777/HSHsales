@@ -86,7 +86,7 @@ export function AdminProducts() {
     <div>
       <AdminHeader
         title="Products"
-        subtitle={loading ? 'Loading…' : `${list.length} ${list.length === 1 ? 'product' : 'products'}`}
+        subtitle={loading ? 'Loading...' : `${list.length} ${list.length === 1 ? 'product' : 'products'}`}
         action={
           <Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="size-4" />
@@ -101,7 +101,7 @@ export function AdminProducts() {
         <EmptyState
           icon={Package}
           title="No products yet"
-          description="Add a product and paste its Stripe Payment Link — reps get an attributed checkout instantly."
+          description="Add a product and paste its Stripe Payment Link - reps get an attributed checkout instantly."
           action={
             <Button size="sm" onClick={() => setCreating(true)}>
               <Plus className="size-4" />
@@ -204,7 +204,7 @@ function ProductRowCard({
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
             aria-label="Move up"
-            className="grid size-6 place-items-center rounded text-slate-400 transition hover:text-slate-600 disabled:opacity-25"
+            className="grid size-6 place-items-center rounded text-white/34 transition hover:text-demo-300 disabled:opacity-25"
           >
             <ChevronUp className="size-4" />
           </button>
@@ -212,28 +212,28 @@ function ProductRowCard({
             disabled={index === total - 1}
             onClick={() => onMove(index, 1)}
             aria-label="Move down"
-            className="grid size-6 place-items-center rounded text-slate-400 transition hover:text-slate-600 disabled:opacity-25"
+            className="grid size-6 place-items-center rounded text-white/34 transition hover:text-demo-300 disabled:opacity-25"
           >
             <ChevronDown className="size-4" />
           </button>
         </div>
         {product.image_url ? (
-          <img src={product.image_url} alt="" className="size-12 shrink-0 rounded-2xl object-cover" />
+          <img src={product.image_url} alt="" className="size-12 shrink-0 rounded-[8px] object-cover" />
         ) : (
-          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-money-50 text-money-600">
+          <span className="grid size-12 shrink-0 place-items-center rounded-[8px] bg-money-400/13 text-money-200 ring-1 ring-money-300/24">
             <Package className="size-5" />
           </span>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="truncate font-semibold text-slate-800">{product.name}</p>
+            <p className="truncate font-semibold text-white">{product.name}</p>
             {product.price_display && (
               <Badge tone="money" className="shrink-0 tnum">
                 {product.price_display}
               </Badge>
             )}
           </div>
-          <p className="truncate font-mono text-xs text-slate-400">{product.stripe_payment_link}</p>
+          <p className="truncate font-mono text-xs text-white/42">{product.stripe_payment_link}</p>
         </div>
         <Switch checked={product.active} onChange={onToggle} label="Active" />
         <Button size="sm" variant="ghost" onClick={onEdit} aria-label="Edit" className="px-2">
@@ -295,18 +295,18 @@ function ProductForm({
         </Field>
         <Field
           label="Stripe Payment Link"
-          hint="The base link — the rep's code is appended automatically at checkout."
+          hint="The base link - the rep's code is appended automatically at checkout."
           error={form.stripe_payment_link.trim() && !linkOk ? 'Enter a full URL including https://' : undefined}
         >
           <Input
             value={form.stripe_payment_link}
             onChange={(e) => setForm((f) => ({ ...f, stripe_payment_link: e.target.value }))}
-            placeholder="https://buy.stripe.com/…"
+            placeholder="https://buy.stripe.com/..."
             inputMode="url"
             required
           />
         </Field>
-        <Field label="Price label" hint="Display only — not what Stripe charges.">
+        <Field label="Price label" hint="Display only - not what Stripe charges.">
           <Input
             value={form.price_display}
             onChange={(e) => setForm((f) => ({ ...f, price_display: e.target.value }))}
@@ -317,7 +317,7 @@ function ProductForm({
           <Textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            placeholder="What the buyer gets…"
+            placeholder="What the buyer gets..."
           />
         </Field>
         <Field
@@ -327,7 +327,7 @@ function ProductForm({
           <Input
             value={form.image_url}
             onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-            placeholder="https://…/photo.jpg"
+            placeholder="https://.../photo.jpg"
             inputMode="url"
           />
         </Field>
@@ -350,8 +350,8 @@ function ListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="glass flex items-center gap-3 rounded-3xl p-3.5">
-          <Skeleton className="size-12 rounded-2xl" />
+        <div key={i} className="glass flex items-center gap-3 rounded-[8px] p-3.5">
+          <Skeleton className="size-12 rounded-[8px]" />
           <div className="flex-1">
             <Skeleton className="h-4 w-2/5" />
             <Skeleton className="mt-2 h-3 w-3/4" />

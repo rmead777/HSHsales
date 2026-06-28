@@ -22,27 +22,27 @@ export function App() {
       <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Signed in, any activation state */}
-      <Route element={<RequireAuth />}>
-        <Route path="/pending" element={<PendingActivation />} />
+      <Route path="pending" element={<RequireAuth />}>
+        <Route index element={<PendingActivation />} />
       </Route>
 
-      {/* Signed in + activated → rep app */}
-      <Route element={<RequireActive />}>
+      {/* Signed in + activated -> rep app */}
+      <Route path="/" element={<RequireActive />}>
         <Route element={<AppShell />}>
           <Route index element={<Dashboard />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/qr" element={<QRCodes />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="qr" element={<QRCodes />} />
         </Route>
       </Route>
 
-      {/* Admins only → CMS */}
-      <Route element={<RequireAdmin />}>
+      {/* Admins only -> CMS */}
+      <Route path="admin" element={<RequireAdmin />}>
         <Route element={<AdminShell />}>
-          <Route path="/admin" element={<AdminReps />} />
-          <Route path="/admin/links" element={<AdminLinks />} />
-          <Route path="/admin/products" element={<AdminProducts />} />
-          <Route path="/admin/announcements" element={<AdminAnnouncements />} />
-          <Route path="/admin/sales" element={<AdminSales />} />
+          <Route index element={<AdminReps />} />
+          <Route path="links" element={<AdminLinks />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
+          <Route path="sales" element={<AdminSales />} />
         </Route>
       </Route>
 

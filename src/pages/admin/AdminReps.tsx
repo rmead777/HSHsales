@@ -81,8 +81,8 @@ export function AdminReps() {
         title="Reps"
         subtitle={
           loading
-            ? 'Loading…'
-            : `${list.length} ${list.length === 1 ? 'person' : 'people'}${pendingCount ? ` · ${pendingCount} pending` : ''}`
+            ? 'Loading...'
+            : `${list.length} ${list.length === 1 ? 'person' : 'people'}${pendingCount ? ` - ${pendingCount} pending` : ''}`
         }
       />
 
@@ -101,7 +101,7 @@ export function AdminReps() {
                     <Avatar name={displayName(p)} active={p.active} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <p className="truncate font-semibold text-slate-800">{p.full_name ?? '—'}</p>
+                        <p className="truncate font-semibold text-white">{p.full_name ?? '-'}</p>
                         {isSelf && <Badge tone="primary">You</Badge>}
                         {p.role === 'admin' && (
                           <Badge tone="primary">
@@ -110,8 +110,8 @@ export function AdminReps() {
                         )}
                         {!p.active && <Badge tone="warn">Pending</Badge>}
                       </div>
-                      <p className="truncate text-xs text-slate-400">{p.email}</p>
-                      <p className="mt-1 font-mono text-xs font-semibold tracking-wide text-slate-500 tnum">
+                      <p className="truncate text-xs text-white/42">{p.email}</p>
+                      <p className="mt-1 font-mono text-xs font-semibold tracking-wide text-demo-100 tnum">
                         {p.rep_code}
                       </p>
                     </div>
@@ -122,8 +122,8 @@ export function AdminReps() {
                       label="Active"
                     />
                   </div>
-                  <div className="mt-3 flex items-center justify-between border-t border-slate-900/5 pt-3">
-                    <span className="text-xs text-slate-400">Joined {formatDate(p.created_at)}</span>
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+                    <span className="text-xs text-white/38">Joined {formatDate(p.created_at)}</span>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -152,8 +152,10 @@ function Avatar({ name, active }: { name: string; active: boolean }) {
   return (
     <div
       className={cn(
-        'grid size-11 shrink-0 place-items-center rounded-2xl font-display text-lg font-bold',
-        active ? 'bg-primary-50 text-primary-600' : 'bg-slate-100 text-slate-400',
+        'grid size-11 shrink-0 place-items-center rounded-[8px] font-display text-lg font-bold ring-1 ring-inset',
+        active
+          ? 'bg-demo-400/13 text-demo-200 ring-demo-300/24'
+          : 'bg-white/[0.06] text-white/34 ring-white/10',
       )}
     >
       {initial}
@@ -165,9 +167,9 @@ function ListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="glass rounded-3xl p-4">
+        <div key={i} className="glass rounded-[8px] p-4">
           <div className="flex items-center gap-3">
-            <Skeleton className="size-11 rounded-2xl" />
+            <Skeleton className="size-11 rounded-[8px]" />
             <div className="flex-1">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="mt-2 h-3 w-40" />

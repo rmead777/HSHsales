@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { AlertTriangle, Copy, CreditCard, Link as LinkIcon, QrCode, Share2 } from 'lucide-react'
+import { AlertTriangle, Copy, CreditCard, Link as LinkIcon, QrCode, Share2, Zap } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import { useAsync } from '../lib/useAsync'
@@ -15,6 +15,7 @@ import { Skeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Sheet } from '../components/ui/Sheet'
 import { QrCard } from '../components/QrCard'
+import { BrandMark } from '../components/BrandMark'
 import { staggerItem, staggerParent } from '../lib/motion'
 import type { Product } from '../lib/database.types'
 
@@ -32,12 +33,21 @@ export function Checkout() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <p className="text-sm font-medium text-slate-400">Sell &amp; get credited</p>
-        <h1 className="font-display text-3xl font-extrabold tracking-[-0.03em] text-slate-900">Checkout</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Every link &amp; QR here is tagged to{' '}
-          <span className="font-mono font-semibold text-money-600">{repCode}</span> — you get the sale.
+      <header className="glass-strong scanline-mask relative overflow-hidden rounded-[8px] p-5">
+        <div className="pointer-events-none absolute -right-12 -top-16 size-44 rounded-full bg-money-400/16 blur-3xl" />
+        <div className="relative flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-money-300">Sell and get credited</p>
+            <h1 className="mt-2 font-display text-4xl font-extrabold leading-none tracking-[-0.05em] text-chrome">
+              Checkout
+            </h1>
+          </div>
+          <BrandMark className="size-14 shrink-0" />
+        </div>
+        <p className="relative mt-4 max-w-md text-sm leading-6 text-white/58">
+          Every link and QR on this screen is stamped with{' '}
+          <span className="font-mono font-bold text-money-200 tnum">{repCode || 'your rep code'}</span>.
+          That is the quiet little machine making attribution behave.
         </p>
       </header>
 
@@ -60,8 +70,8 @@ export function Checkout() {
           title="No products yet"
           description={
             isAdmin
-              ? 'Add a product with its Stripe Payment Link in the admin panel.'
-              : "Your admin hasn't added products yet."
+              ? 'Add a product with its Stripe Payment Link and reps can sell it immediately.'
+              : "Your admin has not added products yet."
           }
           action={
             isAdmin ? (
@@ -76,8 +86,8 @@ export function Checkout() {
       <Sheet open={!!qrProduct} onClose={() => setQrProduct(null)} title={qrProduct?.name ?? 'QR code'}>
         {qrUrl ? (
           <div className="flex flex-col items-center gap-4">
-            <p className="text-center text-sm text-slate-500">
-              Have the buyer scan to pay — the sale is credited to you.
+            <p className="max-w-sm text-center text-sm leading-6 text-white/56">
+              Have the buyer scan to pay. The completed checkout reports back with your rep code.
             </p>
             <QrCard url={qrUrl} fileName={`${slug(qrProduct?.name)}-${repCode}`} />
             <LinkActions url={qrUrl} title={qrProduct?.name} />
@@ -105,22 +115,31 @@ function ProductCard({
   async function onCopy() {
     if (!url) return
     const r = await copyText(url)
-    show(r === 'failed' ? 'Could not copy' : 'Link copied — tagged to you', r === 'failed' ? 'error' : 'success')
+    show(r === 'failed' ? 'Could not copy' : 'Link copied - tagged to you', r === 'failed' ? 'error' : 'success')
   }
 
   return (
     <motion.div variants={staggerItem}>
       <GlassCard className="overflow-hidden">
-        {product.image_url ? (
-          <img src={product.image_url} alt={product.name} loading="lazy" className="h-40 w-full object-cover" />
-        ) : (
-          <div className="flex h-28 items-center justify-center bg-gradient-to-br from-money-400 to-money-600">
-            <CreditCard className="size-10 text-white/80" />
+        <div className="relative">
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.name} loading="lazy" className="h-40 w-full object-cover" />
+          ) : (
+            <div className="scanline-mask flex h-32 items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(34,239,178,0.32),transparent_42%),linear-gradient(135deg,rgba(0,0,0,0.18),rgba(0,201,139,0.24))]">
+              <CreditCard className="size-11 text-money-200" />
+            </div>
+          )}
+          <div className="absolute left-4 top-4">
+            <Badge tone="money">
+              <Zap className="size-3" /> Attributed
+            </Badge>
           </div>
-        )}
-        <div className="p-5">
+        </div>
+        <div className="relative p-5">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="font-display text-xl font-bold tracking-[-0.02em] text-slate-900">{product.name}</h3>
+            <h3 className="font-display text-2xl font-extrabold leading-tight tracking-[-0.04em] text-white">
+              {product.name}
+            </h3>
             {product.price_display && (
               <Badge tone="money" className="shrink-0 tnum">
                 {product.price_display}
@@ -128,14 +147,14 @@ function ProductCard({
             )}
           </div>
           {product.description && (
-            <p className="mt-2 text-sm leading-relaxed text-slate-500">{product.description}</p>
+            <p className="mt-2 text-sm leading-relaxed text-white/56">{product.description}</p>
           )}
 
           {url ? (
             <>
-              <div className="mt-4 flex items-center gap-2 rounded-2xl bg-slate-900/[0.03] px-3 py-2">
-                <LinkIcon className="size-4 shrink-0 text-slate-400" />
-                <span className="truncate font-mono text-xs text-slate-500">{url}</span>
+              <div className="mt-4 flex items-center gap-2 rounded-[8px] border border-white/10 bg-black/28 px-3 py-2">
+                <LinkIcon className="size-4 shrink-0 text-demo-300" />
+                <span className="truncate font-mono text-xs text-white/48">{url}</span>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <Button variant="money" onClick={onCopy}>
@@ -206,9 +225,9 @@ function LinkActions({ url, title }: { url: string; title?: string }) {
 
 function MalformedLink() {
   return (
-    <div className="mt-4 flex items-center gap-2 rounded-2xl bg-warn-50 px-3 py-2.5 text-sm font-medium text-warn-600">
+    <div className="mt-4 flex items-center gap-2 rounded-[8px] border border-warn-400/24 bg-warn-400/12 px-3 py-2.5 text-sm font-semibold text-warn-100">
       <AlertTriangle className="size-4 shrink-0" />
-      This product&apos;s Stripe link looks invalid — ask an admin to fix it.
+      This product's Stripe link looks invalid. Ask an admin to fix it.
     </div>
   )
 }
@@ -217,12 +236,12 @@ function ProductsSkeleton() {
   return (
     <div className="flex flex-col gap-4">
       {Array.from({ length: 2 }).map((_, i) => (
-        <div key={i} className="glass overflow-hidden rounded-3xl">
-          <Skeleton className="h-28 w-full rounded-none" />
+        <div key={i} className="glass overflow-hidden rounded-[8px]">
+          <Skeleton className="h-32 w-full rounded-none" />
           <div className="p-5">
             <Skeleton className="h-6 w-1/2" />
             <Skeleton className="mt-3 h-4 w-3/4" />
-            <Skeleton className="mt-4 h-11 w-full rounded-2xl" />
+            <Skeleton className="mt-4 h-11 w-full rounded-[8px]" />
           </div>
         </div>
       ))}

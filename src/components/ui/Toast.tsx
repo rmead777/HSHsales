@@ -24,9 +24,9 @@ export function useToast(): ToastApi {
 }
 
 const toneConfig: Record<Tone, { icon: typeof CheckCircle2; accent: string }> = {
-  success: { icon: CheckCircle2, accent: 'text-money-600' },
-  info: { icon: Info, accent: 'text-primary-600' },
-  error: { icon: XCircle, accent: 'text-danger-600' },
+  success: { icon: CheckCircle2, accent: 'text-money-300' },
+  info: { icon: Info, accent: 'text-demo-300' },
+  error: { icon: XCircle, accent: 'text-danger-400' },
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -54,7 +54,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 initial={{ opacity: 0, y: 16, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1, transition: springs.standardExpressive }}
                 exit={{ opacity: 0, y: 10, scale: 0.98, transition: exitTween }}
-                className="glass-strong pointer-events-auto flex max-w-sm items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-800"
+                className="glass-strong pointer-events-auto flex max-w-sm items-center gap-2.5 rounded-[8px] px-4 py-3 text-sm font-semibold text-white"
               >
                 <Icon className={cn('size-5 shrink-0', cfg.accent)} />
                 <span>{t.message}</span>

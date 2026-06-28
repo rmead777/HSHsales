@@ -61,7 +61,7 @@ export function AdminAnnouncements() {
     <div>
       <AdminHeader
         title="Announcements"
-        subtitle={loading ? 'Loading…' : `${list.length} total`}
+        subtitle={loading ? 'Loading...' : `${list.length} total`}
         action={
           <Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="size-4" />
@@ -90,12 +90,12 @@ export function AdminAnnouncements() {
             <motion.div key={a.id} variants={staggerItem}>
               <GlassCard className="p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm leading-relaxed text-slate-700">{a.body}</p>
+                  <p className="text-sm leading-relaxed text-white/72">{a.body}</p>
                   <Switch checked={a.active} onChange={() => toggleActive(a)} label="Visible" />
                 </div>
-                <div className="mt-3 flex items-center justify-between border-t border-slate-900/5 pt-3">
+                <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">{formatDate(a.created_at)}</span>
+                    <span className="text-xs text-white/38">{formatDate(a.created_at)}</span>
                     {a.active ? <Badge tone="money">Live</Badge> : <Badge tone="neutral">Hidden</Badge>}
                   </div>
                   <Button size="sm" variant="ghost" onClick={() => setEditing(a)} aria-label="Edit" className="px-2">
@@ -182,7 +182,7 @@ function AnnouncementForm({
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="New pricing for Q3 is live — check the deck."
+            placeholder="New pricing for Q3 is live - check the deck."
             required
           />
         </Field>
@@ -205,7 +205,7 @@ function ListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="glass rounded-3xl p-4">
+        <div key={i} className="glass rounded-[8px] p-4">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-2/3" />
         </div>

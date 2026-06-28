@@ -38,7 +38,7 @@ export function Sheet({
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
           <motion.div
-            className="absolute inset-0 bg-slate-900/30"
+            className="absolute inset-0 bg-black/68 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: exitTween }}
@@ -48,18 +48,18 @@ export function Sheet({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="glass-strong relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-4xl px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-4xl sm:pb-6"
+            className="glass-strong relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-[8px] px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-[8px] sm:pb-6"
             initial={{ opacity: 0, y: 48, scale: 0.985 }}
             animate={{ opacity: 1, y: 0, scale: 1, transition: { ...springs.standardFunctional, delay: 0.04 } }}
             exit={{ opacity: 0, y: 28, transition: exitTween }}
           >
-            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-300/80 sm:hidden" />
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-white/22 sm:hidden" />
             <div className="mb-4 flex items-center justify-between gap-4">
-              <h2 className="font-display text-lg font-bold tracking-[-0.02em] text-slate-900">{title}</h2>
+              <h2 className="font-display text-lg font-extrabold tracking-[-0.02em] text-white">{title}</h2>
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="grid size-9 shrink-0 place-items-center rounded-full text-slate-500 transition hover:bg-slate-900/5"
+                className="grid size-9 shrink-0 place-items-center rounded-full text-white/56 transition hover:bg-white/[0.08] hover:text-white"
               >
                 <X className="size-5" />
               </button>

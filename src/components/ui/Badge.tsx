@@ -4,12 +4,12 @@ import { cn } from '../../lib/cn'
 type Tone = 'primary' | 'money' | 'demo' | 'warn' | 'danger' | 'neutral'
 
 const tones: Record<Tone, string> = {
-  primary: 'bg-primary-50 text-primary-700 ring-primary-200',
-  money: 'bg-money-50 text-money-700 ring-money-100',
-  demo: 'bg-demo-50 text-demo-600 ring-demo-100',
-  warn: 'bg-warn-50 text-warn-600 ring-warn-100',
-  danger: 'bg-danger-50 text-danger-600 ring-danger-100',
-  neutral: 'bg-slate-100 text-slate-600 ring-slate-200',
+  primary: 'bg-primary-500/18 text-primary-100 ring-primary-300/30',
+  money: 'bg-money-400/16 text-money-100 ring-money-300/28',
+  demo: 'bg-demo-400/16 text-demo-100 ring-demo-300/30',
+  warn: 'bg-warn-400/16 text-warn-100 ring-warn-400/26',
+  danger: 'bg-danger-500/16 text-danger-100 ring-danger-400/30',
+  neutral: 'bg-white/[0.07] text-white/68 ring-white/12',
 }
 
 export function Badge({
@@ -24,7 +24,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset',
+        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold tracking-[0.02em] ring-1 ring-inset [&_svg]:-mt-px',
         tones[tone],
         className,
       )}

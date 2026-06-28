@@ -84,7 +84,7 @@ export function AdminLinks() {
     <div>
       <AdminHeader
         title="Links"
-        subtitle={loading ? 'Loading…' : `${list.length} ${list.length === 1 ? 'link' : 'links'}`}
+        subtitle={loading ? 'Loading...' : `${list.length} ${list.length === 1 ? 'link' : 'links'}`}
         action={
           <Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="size-4" />
@@ -185,7 +185,7 @@ function LinkRowCard({
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
             aria-label="Move up"
-            className="grid size-6 place-items-center rounded text-slate-400 transition hover:text-slate-600 disabled:opacity-25"
+            className="grid size-6 place-items-center rounded text-white/34 transition hover:text-demo-300 disabled:opacity-25"
           >
             <ChevronUp className="size-4" />
           </button>
@@ -193,17 +193,17 @@ function LinkRowCard({
             disabled={index === total - 1}
             onClick={() => onMove(index, 1)}
             aria-label="Move down"
-            className="grid size-6 place-items-center rounded text-slate-400 transition hover:text-slate-600 disabled:opacity-25"
+            className="grid size-6 place-items-center rounded text-white/34 transition hover:text-demo-300 disabled:opacity-25"
           >
             <ChevronDown className="size-4" />
           </button>
         </div>
-        <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary-50 text-primary-600">
+        <span className="grid size-10 shrink-0 place-items-center rounded-[8px] bg-demo-400/13 text-demo-300 ring-1 ring-demo-300/24">
           <Icon className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-slate-800">{link.label}</p>
-          <p className="truncate text-xs text-slate-400">{link.url}</p>
+          <p className="truncate font-semibold text-white">{link.label}</p>
+          <p className="truncate text-xs text-white/42">{link.url}</p>
         </div>
         <Switch checked={link.active} onChange={onToggle} label="Active" />
         <Button size="sm" variant="ghost" onClick={onEdit} aria-label="Edit" className="px-2">
@@ -271,12 +271,12 @@ function LinkForm({
           <Input
             value={form.url}
             onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-            placeholder="https://docs.google.com/…"
+            placeholder="https://docs.google.com/..."
             inputMode="url"
             required
           />
         </Field>
-        <Field label="Icon (optional)" hint="Keyword: deck, pricing, video, training, help, info…">
+        <Field label="Icon (optional)" hint="Keyword: deck, pricing, video, training, help, info...">
           <Input
             value={form.icon}
             onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
@@ -302,8 +302,8 @@ function ListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="glass flex items-center gap-3 rounded-3xl p-3.5">
-          <Skeleton className="size-10 rounded-2xl" />
+        <div key={i} className="glass flex items-center gap-3 rounded-[8px] p-3.5">
+          <Skeleton className="size-10 rounded-[8px]" />
           <div className="flex-1">
             <Skeleton className="h-4 w-1/3" />
             <Skeleton className="mt-2 h-3 w-2/3" />

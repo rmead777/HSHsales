@@ -23,8 +23,8 @@ export function Switch({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        'relative h-7 w-12 shrink-0 rounded-full transition-colors',
-        checked ? 'bg-money-500' : 'bg-slate-300',
+        'relative h-7 w-12 shrink-0 rounded-full border transition-colors',
+        checked ? 'border-money-300/60 bg-money-400 shadow-[0_0_22px_rgba(0,201,139,0.28)]' : 'border-white/12 bg-white/14',
         disabled && 'cursor-not-allowed opacity-50',
       )}
     >
