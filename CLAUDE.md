@@ -53,7 +53,10 @@ Verified integration details: [docs/INTEGRATION_REFERENCE.md](docs/INTEGRATION_R
   can recurse. Use `SECURITY DEFINER` helper functions (`private.is_active()`, `private.is_admin()`,
   in the unexposed `private` schema) that bypass RLS — do not inline `profiles` sub-selects in gated policies.
 - **Privilege escalation:** a rep must not be able to set their own `active=true` or `role='admin'`.
-  Enforced by a trigger/policy on `profiles` UPDATE.
+  Enforced by the `enforce_profile_protected_columns` BEFORE UPDATE trigger. It only polices
+  *end-users* (`auth.uid() IS NOT NULL`); SQL editor / service-role (null uid) are allowed — that's
+  how the first admin is bootstrapped (migration `0003`). Plain `update … set role='admin'` from the
+  SQL editor fails with `42501` only if `0003` hasn't been applied.
 - **Webhook raw body:** Stripe signature verification needs the **raw** request body. The webhook is a
   Vercel Web-handler (`export function POST(request: Request)`), so `await request.text()` gives the raw
   bytes — no `bodyParser` config (that's Pages-Router only). Verified via `constructEventAsync`.

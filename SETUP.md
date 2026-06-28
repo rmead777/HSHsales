@@ -34,6 +34,8 @@ This Claude session's Supabase MCP is logged into a different account than the o
    helper functions, the signup trigger, and the anti-escalation trigger.
 3. Paste & run [`supabase/migrations/0002_seed.sql`](supabase/migrations/0002_seed.sql) — placeholder
    links/products/announcements (idempotent; only seeds empty tables).
+4. Paste & run [`supabase/migrations/0003_allow_admin_bootstrap.sql`](supabase/migrations/0003_allow_admin_bootstrap.sql)
+   — lets the SQL editor create the first admin (the anti-escalation trigger otherwise blocks it).
 
 > If you later restart Claude Code with the Supabase connector authed to the owning account, the MCP
 > can apply these for you instead (`apply_migration`). Or use the CLI if it's linked to this project.
@@ -53,9 +55,16 @@ Dashboard → **Authentication → Providers → Email**:
 
 ### 2d. Make yourself an admin
 1. Run the app, **sign up** with your email → you'll see "Account pending".
-2. In the SQL editor:
+2. In the SQL editor (replace the email):
    ```sql
-   update public.profiles set role = 'admin', active = true where email = 'rmead777@gmail.com';
+   update public.profiles set role = 'admin', active = true where email = 'you@example.com';
+   ```
+   If you hit `42501: not authorized to modify active or role`, you haven't applied migration `0003`
+   yet — either apply it (§2a step 4) or run this one-off bootstrap:
+   ```sql
+   alter table public.profiles disable trigger trg_profiles_protect_cols;
+   update public.profiles set role='admin', active=true where email='you@example.com';
+   alter table public.profiles enable trigger trg_profiles_protect_cols;
    ```
 3. Reload the app — you now have the **Admin** tab.
 
