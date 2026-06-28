@@ -1,0 +1,204 @@
+High Score Host Sales App (V3)
+Philosophy
+The app should do as little as possible.
+
+Everything that changes frequently should live outside the app.
+
+The app's primary job is to authenticate salespeople, connect them to Stripe, and provide a simple launcher for sales resources.
+
+Core Features
+1. Login
+Salesperson creates an account.
+
+Admin activates account.
+
+Inactive accounts cannot access Stripe links.
+
+2. Dashboard
+Very simple.
+
+Buttons only.
+
+Examples:
+
+Sales Deck
+
+Pricing
+
+Product Info
+
+Videos
+
+Launch Kits
+
+Checkout
+
+Announcements
+
+Training
+
+Help
+
+Everything opens a link.
+
+3. Checkout
+The most important feature.
+
+Displays:
+
+Launch Kits
+
+Pricing
+
+Discounts
+
+Stripe Payment Links
+
+Copy Link
+
+Share Link
+
+QR Code
+
+Every sale ultimately goes through Stripe.
+
+4. QR Code
+Display QR codes for:
+
+Demo
+
+Customer Purchase
+
+Personal Referral
+
+Nothing more complicated.
+
+5. Admin
+Admin can edit:
+
+Button names
+
+Button order
+
+Destination URLs
+
+Stripe links
+
+Announcements
+
+Account activation
+
+Everything updates instantly.
+
+Content System
+Nothing is stored inside the app.
+
+Instead:
+
+Sales Deck
+
+↓
+
+Google Slides
+
+Training
+
+↓
+
+Google Docs
+
+Product Information
+
+↓
+
+Google Docs
+
+Pricing
+
+↓
+
+Google Sheet
+
+Videos
+
+↓
+
+YouTube
+
+FAQ
+
+↓
+
+Google Docs
+
+Calculator
+
+↓
+
+Hosted webpage
+
+Everything becomes editable without shipping a new app.
+
+Benefits
+No app updates when:
+
+Pricing changes
+
+Slides change
+
+Sales script changes
+
+Videos change
+
+Training changes
+
+Only URLs change.
+
+Stripe
+Every product has:
+
+Name
+
+Description
+
+Image
+
+Stripe Link
+
+QR Code
+
+The app simply launches the appropriate Stripe checkout.
+
+Admin CMS
+The admin panel should feel like editing bookmarks.
+
+Example:
+
+Sales Deck
+
+https://docs.google...
+
+Training
+
+https://docs.google...
+
+Pricing
+
+https://docs.google...
+
+Calculator
+
+https://...
+
+Launch Kit
+
+https://...
+
+No coding required.
+
+Future
+The app becomes a launcher.
+
+The content becomes modular.
+
+The platform evolves without requiring mobile releases.
