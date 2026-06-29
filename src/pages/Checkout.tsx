@@ -139,13 +139,13 @@ function ProductCard({
           </div>
         </div>
         <div className="relative p-5">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="font-display text-2xl font-extrabold leading-tight tracking-[-0.04em] text-white">
+          <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-3">
+            <h3 className="min-w-0 font-display text-2xl font-extrabold leading-tight tracking-[-0.04em] text-white">
               {product.name}
             </h3>
             {product.price_display && (
-              <Badge tone="money" className="shrink-0 tnum">
-                {product.price_display}
+              <Badge tone="money" className="max-w-full min-w-0 whitespace-normal text-left leading-snug tnum sm:max-w-[56%] sm:shrink-0">
+                <span className="min-w-0 break-words">{product.price_display}</span>
               </Badge>
             )}
           </div>
