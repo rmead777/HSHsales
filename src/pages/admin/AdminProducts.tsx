@@ -201,8 +201,8 @@ function ProductRowCard({
 }) {
   return (
     <motion.div variants={staggerItem} layout transition={springs.standardFunctional}>
-      <GlassCard className="flex items-center gap-3 p-3.5">
-        <div className="flex flex-col gap-1">
+      <GlassCard className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-3 p-3.5 sm:flex sm:items-center sm:gap-3">
+        <div className="row-span-2 flex flex-col gap-1 sm:row-auto">
           <button
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
@@ -220,28 +220,37 @@ function ProductRowCard({
             <ChevronDown className="size-4" />
           </button>
         </div>
-        {product.image_url ? (
-          <img src={product.image_url} alt="" className="size-12 shrink-0 rounded-[8px] object-cover" />
-        ) : (
-          <span className="grid size-12 shrink-0 place-items-center rounded-[8px] bg-money-400/13 text-money-200 ring-1 ring-money-300/24">
-            <Package className="size-5" />
-          </span>
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="truncate font-semibold text-white">{product.name}</p>
-            {product.price_display && (
-              <Badge tone="money" className="shrink-0 tnum">
-                {product.price_display}
-              </Badge>
-            )}
+        <div className="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] items-center gap-3 sm:flex sm:flex-1">
+          {product.image_url ? (
+            <img src={product.image_url} alt="" className="size-12 shrink-0 rounded-[8px] object-cover" />
+          ) : (
+            <span className="grid size-12 shrink-0 place-items-center rounded-[8px] bg-money-400/13 text-money-200 ring-1 ring-money-300/24">
+              <Package className="size-5" />
+            </span>
+          )}
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <p className="min-w-0 max-w-full truncate font-semibold text-white">{product.name}</p>
+              {product.price_display && (
+                <Badge tone="money" className="max-w-full min-w-0 truncate tnum sm:max-w-56">
+                  {product.price_display}
+                </Badge>
+              )}
+            </div>
+            <p className="mt-0.5 truncate font-mono text-xs text-white/42">{product.stripe_payment_link}</p>
           </div>
-          <p className="truncate font-mono text-xs text-white/42">{product.stripe_payment_link}</p>
         </div>
-        <Switch checked={product.active} onChange={onToggle} label="Active" />
-        <Button size="sm" variant="ghost" onClick={onEdit} aria-label="Edit" className="px-2">
-          <Pencil className="size-4" />
-        </Button>
+        <div className="col-start-2 flex min-w-0 items-center justify-between gap-2 border-t border-white/10 pt-3 sm:col-auto sm:ml-auto sm:border-0 sm:pt-0">
+          <span className="text-[0.62rem] font-black uppercase tracking-[0.18em] text-white/34 sm:hidden">
+            Active
+          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <Switch checked={product.active} onChange={onToggle} label="Active" />
+            <Button size="sm" variant="ghost" onClick={onEdit} aria-label="Edit" className="px-2">
+              <Pencil className="size-4" />
+            </Button>
+          </div>
+        </div>
       </GlassCard>
     </motion.div>
   )
