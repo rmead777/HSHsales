@@ -49,3 +49,4 @@ coverage/
 
 .vercel
 .env*.local
+hsh STRIPE.txt
