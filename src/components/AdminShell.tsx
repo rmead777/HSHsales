@@ -1,5 +1,5 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'motion/react'
+import { NavLink, Outlet } from 'react-router-dom'
+import { motion } from 'motion/react'
 import {
   ArrowLeft,
   BarChart3,
@@ -31,7 +31,6 @@ const adminTabs: Tab[] = [
 
 /** Admin chrome: wider control room with compact, scrollable command tabs. */
 export function AdminShell() {
-  const location = useLocation()
   return (
     <div className="relative mx-auto flex min-h-dvh max-w-4xl flex-col">
       <div className="pointer-events-none fixed inset-x-0 top-0 h-1 marquee-strip" aria-hidden />
@@ -65,16 +64,7 @@ export function AdminShell() {
       </header>
 
       <main className="flex-1 px-4 pt-5 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-5">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0, transition: springs.standardFunctional }}
-            exit={{ opacity: 0, y: -6, transition: { duration: 0.15, ease: 'easeIn' } }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <Outlet />
       </main>
     </div>
   )
