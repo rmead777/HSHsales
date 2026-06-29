@@ -26,7 +26,7 @@ export function Field({
 }
 
 const inputBase =
-  'w-full rounded-[8px] border border-white/12 bg-black/28 px-4 text-[0.95rem] text-white ' +
+  'w-full rounded-[8px] border border-white/12 bg-black/28 px-4 text-base text-white ' +
   'placeholder:text-white/28 outline-none transition-[border-color,background-color,box-shadow] duration-150 ' +
   'hover:border-white/20 focus-visible:border-demo-400 focus-visible:bg-black/38 focus-visible:ring-4 focus-visible:ring-demo-400/15'
 

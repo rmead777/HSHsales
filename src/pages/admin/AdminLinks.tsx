@@ -183,12 +183,12 @@ function LinkRowCard({
   return (
     <motion.div variants={staggerItem} layout transition={springs.standardFunctional}>
       <GlassCard className="flex items-center gap-3 p-3.5">
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <button
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
             aria-label="Move up"
-            className="grid size-6 place-items-center rounded text-white/34 transition hover:text-demo-300 disabled:opacity-25"
+            className="grid size-9 place-items-center rounded text-white/34 transition hover:bg-white/[0.08] hover:text-demo-300 disabled:opacity-25"
           >
             <ChevronUp className="size-4" />
           </button>
@@ -196,7 +196,7 @@ function LinkRowCard({
             disabled={index === total - 1}
             onClick={() => onMove(index, 1)}
             aria-label="Move down"
-            className="grid size-6 place-items-center rounded text-white/34 transition hover:text-demo-300 disabled:opacity-25"
+            className="grid size-9 place-items-center rounded text-white/34 transition hover:bg-white/[0.08] hover:text-demo-300 disabled:opacity-25"
           >
             <ChevronDown className="size-4" />
           </button>

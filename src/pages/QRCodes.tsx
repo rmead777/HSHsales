@@ -226,6 +226,7 @@ function ProductPicker({
             onClick={() => onSelect(p.id)}
             className={cn(
               'shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition',
+              'min-h-11',
               active
                 ? 'border-money-300/50 bg-money-400 text-[#03110c] shadow-[0_12px_24px_-18px_rgba(0,201,139,0.9)]'
                 : 'border-white/10 bg-white/[0.06] text-white/58 hover:bg-white/[0.10] hover:text-white',

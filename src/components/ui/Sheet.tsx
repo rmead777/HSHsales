@@ -48,7 +48,7 @@ export function Sheet({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="glass-strong relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-[8px] px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-[8px] sm:pb-6"
+            className="glass-strong relative z-10 max-h-[90svh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-[8px] px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-[8px] sm:pb-6"
             initial={{ opacity: 0, y: 48, scale: 0.985 }}
             animate={{ opacity: 1, y: 0, scale: 1, transition: { ...springs.standardFunctional, delay: 0.04 } }}
             exit={{ opacity: 0, y: 28, transition: exitTween }}
@@ -59,7 +59,7 @@ export function Sheet({
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="grid size-9 shrink-0 place-items-center rounded-full text-white/56 transition hover:bg-white/[0.08] hover:text-white"
+                className="grid size-11 shrink-0 place-items-center rounded-full text-white/56 transition hover:bg-white/[0.08] hover:text-white"
               >
                 <X className="size-5" />
               </button>

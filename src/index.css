@@ -89,6 +89,7 @@ body,
 html {
   background: #030304;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -105,6 +106,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 body::before {
@@ -282,6 +284,8 @@ body::after {
 
 .no-scrollbar {
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -327,6 +331,21 @@ body::after {
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(46, 234, 255, 0.32) transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
 }
 
 *::-webkit-scrollbar {

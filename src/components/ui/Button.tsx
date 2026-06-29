@@ -24,9 +24,9 @@ const variants: Record<Variant, string> = {
   ghost: 'text-white/72 hover:bg-white/[0.08] hover:text-white',
 }
 
-// md = 44px (the iOS minimum touch target); lg = 56px for primary field actions.
+// sm/md are 44px+ so every visible action clears mobile touch-target minimums.
 const sizes: Record<Size, string> = {
-  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-[8px]',
+  sm: 'h-11 px-4 text-sm gap-1.5 rounded-[8px]',
   md: 'h-11 px-4 text-[0.95rem] gap-2 rounded-[8px]',
   lg: 'h-14 px-5 text-base gap-2.5 rounded-[8px]',
 }

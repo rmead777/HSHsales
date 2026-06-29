@@ -143,7 +143,7 @@ export function Login() {
                       setError(null)
                       setInfo(null)
                     }}
-                    className="relative h-10 rounded-[6px] text-sm font-bold"
+                    className="relative h-11 rounded-[6px] text-sm font-bold"
                   >
                     {active && (
                       <motion.span
