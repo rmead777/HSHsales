@@ -10,13 +10,12 @@ const PendingActivation = lazy(() => import('./pages/PendingActivation').then((m
 const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
 const Checkout = lazy(() => import('./pages/Checkout').then((m) => ({ default: m.Checkout })))
 const QRCodes = lazy(() => import('./pages/QRCodes').then((m) => ({ default: m.QRCodes })))
-const AdminReps = lazy(() => import('./pages/admin/AdminReps').then((m) => ({ default: m.AdminReps })))
-const AdminLinks = lazy(() => import('./pages/admin/AdminLinks').then((m) => ({ default: m.AdminLinks })))
-const AdminProducts = lazy(() => import('./pages/admin/AdminProducts').then((m) => ({ default: m.AdminProducts })))
-const AdminAnnouncements = lazy(() =>
-  import('./pages/admin/AdminAnnouncements').then((m) => ({ default: m.AdminAnnouncements })),
-)
-const AdminSales = lazy(() => import('./pages/admin/AdminSales').then((m) => ({ default: m.AdminSales })))
+const loadAdminPages = () => import('./pages/admin')
+const AdminReps = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminReps })))
+const AdminLinks = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminLinks })))
+const AdminProducts = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminProducts })))
+const AdminAnnouncements = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminAnnouncements })))
+const AdminSales = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminSales })))
 
 export function App() {
   return (

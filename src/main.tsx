@@ -8,8 +8,17 @@ import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './components/ui/Toast'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
-// Auto-update the installed PWA in the background.
-registerSW({ immediate: true })
+// Auto-update the installed PWA and reload once the new asset graph is ready.
+// That prevents stale service-worker caches from holding old lazy-route chunks.
+const updateServiceWorker = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    void updateServiceWorker(true)
+  },
+  onNeedReload() {
+    window.location.reload()
+  },
+})
 
 const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('Root element #root not found')
