@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
-import { BrandMark } from '../components/BrandMark'
+import { BrandLogo } from '../components/BrandMark'
 import { springs } from '../lib/motion'
 
 export function PendingActivation() {
@@ -45,7 +45,7 @@ export function PendingActivation() {
         className="w-full max-w-sm"
       >
         <GlassCard strong className="flex flex-col items-center p-7 text-center">
-          <BrandMark className="size-16" />
+          <BrandLogo className="size-24" />
           <motion.div
             className="mt-5 grid size-14 place-items-center rounded-[8px] bg-warn-400/13 text-warn-100 ring-1 ring-warn-400/24"
             animate={{ opacity: [0.78, 1, 0.78] }}

@@ -10,12 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      // Generates favicon, apple-touch, and 192/512 (+ maskable) PNGs from the source SVG at
-      // build time and injects them into the manifest + <head>. Requires @vite-pwa/assets-generator.
-      pwaAssets: {
-        image: 'public/favicon.svg',
-        overrideManifestIcons: true,
-      },
+      includeAssets: ['hshlogo.png', 'hshlogocube.png', 'apple-touch-icon.png'],
       // devOptions: { enabled: true }, // uncomment to exercise the service worker in `npm run dev`
       manifest: {
         name: 'High Score Host - Sales',
@@ -27,6 +22,11 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         scope: '/',
+        icons: [
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],

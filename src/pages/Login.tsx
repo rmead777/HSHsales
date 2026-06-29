@@ -4,7 +4,7 @@ import { motion } from 'motion/react'
 import { ArrowRight, Gamepad2, Mail, QrCode, ShieldCheck, Trophy, type LucideIcon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
-import { BrandMark } from '../components/BrandMark'
+import { BrandLogo } from '../components/BrandMark'
 import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
 import { Field, Input } from '../components/ui/Field'
@@ -75,14 +75,8 @@ export function Login() {
           animate={{ opacity: 1, y: 0, transition: springs.standardExpressive }}
           className="hidden lg:block"
         >
-          <div className="mb-8 flex items-center gap-4">
-            <BrandMark className="size-20 shrink-0" />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-demo-300">High Score Host</p>
-              <p className="mt-1 font-display text-2xl font-extrabold tracking-[-0.04em] text-white">
-                Sales console
-              </p>
-            </div>
+          <div className="mb-8">
+            <BrandLogo className="size-32 drop-shadow-[0_22px_46px_rgba(46,234,255,0.18)]" />
           </div>
 
           <h1 className="max-w-3xl font-display text-6xl font-extrabold leading-[0.92] tracking-[-0.05em] text-chrome">
@@ -109,9 +103,8 @@ export function Login() {
           className="mx-auto w-full max-w-md"
         >
           <div className="mb-6 flex flex-col items-center text-center lg:hidden">
-            <BrandMark className="size-20 drop-shadow-[0_20px_42px_rgba(46,234,255,0.26)]" />
-            <p className="mt-4 text-xs font-black uppercase tracking-[0.26em] text-demo-300">High Score Host</p>
-            <h1 className="mt-2 font-display text-4xl font-extrabold leading-none tracking-[-0.05em] text-chrome">
+            <BrandLogo className="size-28 drop-shadow-[0_20px_42px_rgba(46,234,255,0.22)]" />
+            <h1 className="mt-3 font-display text-4xl font-extrabold leading-none tracking-[-0.05em] text-chrome">
               Sales console
             </h1>
           </div>

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="HSH Sales">
-  <rect width="512" height="512" rx="112" fill="#0f172a"/>
-  <path d="M150 140v232M150 256h120M270 140v232" fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round"/>
-  <path d="M330 372V140l44 0c44 0 70 26 70 64 0 30-16 52-44 60l52 108h-50l-46-100h-26v100z" fill="#2563eb"/>
-</svg>
