@@ -18,6 +18,7 @@ import { fetchActiveAnnouncements, fetchActiveLinks } from '../lib/queries'
 import { resolveLinkIcon } from '../lib/linkIcon'
 import { Skeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
+import { LoadError } from '../components/ui/LoadError'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { BrandMark } from '../components/BrandMark'
@@ -47,12 +48,19 @@ export function Dashboard() {
         </div>
       </section>
 
-      <AnnouncementsBlock loading={announcements.loading} items={announcements.data ?? []} />
+      <AnnouncementsBlock
+        loading={announcements.loading}
+        error={announcements.error}
+        items={announcements.data ?? []}
+        onRetry={announcements.reload}
+      />
 
       <section>
         <SectionHeading icon={LayoutGrid} title="Sales kit" />
         {links.loading ? (
           <LinksSkeleton />
+        ) : links.error ? (
+          <LoadError title="Sales kit unavailable" onRetry={links.reload} />
         ) : links.data && links.data.length > 0 ? (
           <motion.div
             variants={staggerParent}
@@ -217,8 +225,26 @@ function LinkTile({ link }: { link: LinkRow }) {
   )
 }
 
-function AnnouncementsBlock({ loading, items }: { loading: boolean; items: Announcement[] }) {
+function AnnouncementsBlock({
+  loading,
+  error,
+  items,
+  onRetry,
+}: {
+  loading: boolean
+  error: string | null
+  items: Announcement[]
+  onRetry: () => Promise<void>
+}) {
   if (loading) return <Skeleton className="h-28 rounded-[8px]" />
+  if (error) {
+    return (
+      <section>
+        <SectionHeading icon={Megaphone} title="Broadcast" />
+        <LoadError title="Broadcast unavailable" onRetry={() => void onRetry()} />
+      </section>
+    )
+  }
   if (items.length === 0) return null
   const [latest, ...rest] = items
   return (

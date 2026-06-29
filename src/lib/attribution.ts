@@ -1,10 +1,8 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Sale attribution — the core mechanism. Get this exactly right (spec §6).
+// Sale attribution is the core revenue mechanism. Get this exactly right.
 //
 // Stripe Payment Links accept `client_reference_id` ONLY as [A-Za-z0-9_-], max 200
 // chars. Anything else (@ . : / spaces) or over-length is SILENTLY DROPPED by Stripe,
 // so the attribution arrives `null` on the webhook with no error. Always sanitize.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Coerce a rep_code into the charset Stripe's client_reference_id will actually keep. */
 export function sanitizeRepCode(repCode: string): string {
@@ -14,7 +12,7 @@ export function sanitizeRepCode(repCode: string): string {
 /**
  * Build a rep's attributed checkout URL from a product's base Payment Link.
  * Uses the URL API so an existing query string on the base link is preserved
- * (handles `?` vs `&` automatically). Throws on a malformed base URL — use the
+ * (handles `?` vs `&` automatically). Throws on a malformed base URL. Use the
  * `safe*` variant in UI where the admin may have pasted something invalid.
  */
 export function buildAttributedPaymentLink(paymentLinkUrl: string, repCode: string): string {

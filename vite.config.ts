@@ -18,9 +18,9 @@ export default defineConfig({
       },
       // devOptions: { enabled: true }, // uncomment to exercise the service worker in `npm run dev`
       manifest: {
-        name: 'High Score Host — Sales',
+        name: 'High Score Host - Sales',
         short_name: 'HSH Sales',
-        description: 'Your attributed sales links, QR codes, and checkout — anywhere.',
+        description: 'Your attributed sales links, QR codes, and checkout - anywhere.',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',

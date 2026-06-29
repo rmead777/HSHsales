@@ -1,4 +1,4 @@
-/** True only for a syntactically valid http(s) URL — used to validate admin-pasted links. */
+/** True only for a syntactically valid http(s) URL. Used to validate admin-pasted links. */
 export function isHttpUrl(value: string): boolean {
   try {
     const u = new URL(value)

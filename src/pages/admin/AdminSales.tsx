@@ -8,11 +8,12 @@ import { GlassCard } from '../../components/ui/GlassCard'
 import { Badge } from '../../components/ui/Badge'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { LoadError } from '../../components/ui/LoadError'
 import { formatAmount, formatDate, sumAmounts } from '../../lib/format'
 import { staggerItem, staggerParent } from '../../lib/motion'
 
 export function AdminSales() {
-  const { data, loading } = useAsync(fetchSales, [])
+  const { data, loading, error, reload } = useAsync(fetchSales, [])
   const sales = useMemo(() => data ?? [], [data])
   const currency = sales[0]?.currency ?? 'usd'
 
@@ -42,6 +43,8 @@ export function AdminSales() {
 
       {loading ? (
         <SalesSkeleton />
+      ) : error ? (
+        <LoadError title="Sales unavailable" onRetry={reload} />
       ) : sales.length === 0 ? (
         <EmptyState
           icon={BarChart3}
@@ -88,7 +91,7 @@ export function AdminSales() {
                       <p className="truncate font-semibold text-white">{s.product_name ?? 'Sale'}</p>
                       <p className="truncate text-xs text-white/42">
                         {formatDate(s.created_at)}
-                        {s.customer_email ? ` · ${s.customer_email}` : ''}
+                        {s.customer_email ? ` - ${s.customer_email}` : ''}
                       </p>
                     </div>
                     {s.rep_code ? (

@@ -19,13 +19,14 @@ import { Field, Textarea } from '../../components/ui/Field'
 import { ConfirmButton } from '../../components/ui/ConfirmButton'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { LoadError } from '../../components/ui/LoadError'
 import { formatDate } from '../../lib/format'
 import { staggerItem, staggerParent } from '../../lib/motion'
 import type { Announcement } from '../../lib/database.types'
 
 export function AdminAnnouncements() {
   const { show } = useToast()
-  const { data, loading, reload } = useAsync(fetchAllAnnouncements, [])
+  const { data, loading, error, reload } = useAsync(fetchAllAnnouncements, [])
   const [list, setList] = useState<Announcement[]>([])
   const [editing, setEditing] = useState<Announcement | null>(null)
   const [creating, setCreating] = useState(false)
@@ -72,6 +73,8 @@ export function AdminAnnouncements() {
 
       {loading ? (
         <ListSkeleton />
+      ) : error ? (
+        <LoadError title="Announcements unavailable" onRetry={reload} />
       ) : list.length === 0 ? (
         <EmptyState
           icon={Megaphone}
@@ -158,7 +161,10 @@ function AnnouncementForm({
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (open) setBody(initialBody)
+    if (open) {
+      setBody(initialBody)
+      setSaving(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 

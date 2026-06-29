@@ -12,6 +12,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { LoadError } from '../../components/ui/LoadError'
 import { formatDate } from '../../lib/format'
 import { staggerItem, staggerParent } from '../../lib/motion'
 import { cn } from '../../lib/cn'
@@ -20,7 +21,7 @@ import type { Profile, Role } from '../../lib/database.types'
 export function AdminReps() {
   const { user } = useAuth()
   const { show } = useToast()
-  const { data, loading, reload } = useAsync(fetchProfiles, [])
+  const { data, loading, error, reload } = useAsync(fetchProfiles, [])
   const [list, setList] = useState<Profile[]>([])
   const [mutating, setMutating] = useState<Set<string>>(new Set())
 
@@ -88,6 +89,8 @@ export function AdminReps() {
 
       {loading ? (
         <ListSkeleton />
+      ) : error ? (
+        <LoadError title="Reps unavailable" onRetry={reload} />
       ) : list.length === 0 ? (
         <EmptyState icon={Users} title="No accounts yet" description="Reps appear here the moment they sign up." />
       ) : (

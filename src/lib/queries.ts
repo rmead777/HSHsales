@@ -1,12 +1,10 @@
 import { supabase } from './supabaseClient'
 import type { Announcement, Link, Product, Profile, Role, Sale } from './database.types'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// All access goes through these typed helpers — components never call `supabase`
+// All access goes through these typed helpers; components never call `supabase`
 // directly. Reads are RLS-gated server-side: an inactive rep simply gets zero rows.
-// ─────────────────────────────────────────────────────────────────────────────
 
-// ── Rep-facing reads (active content only, ordered) ──
+// Rep-facing reads (active content only, ordered)
 
 export async function fetchActiveLinks(): Promise<Link[]> {
   const { data, error } = await supabase
@@ -38,7 +36,7 @@ export async function fetchActiveAnnouncements(): Promise<Announcement[]> {
   return data ?? []
 }
 
-// ── Admin: links ──
+// Admin: links
 
 export async function fetchAllLinks(): Promise<Link[]> {
   const { data, error } = await supabase.from('links').select('*').order('sort_order', { ascending: true })
@@ -68,7 +66,7 @@ export async function deleteLink(id: string): Promise<void> {
   if (error) throw error
 }
 
-// ── Admin: products ──
+// Admin: products
 
 export async function fetchAllProducts(): Promise<Product[]> {
   const { data, error } = await supabase
@@ -103,7 +101,7 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) throw error
 }
 
-// ── Admin: announcements ──
+// Admin: announcements
 
 export async function fetchAllAnnouncements(): Promise<Announcement[]> {
   const { data, error } = await supabase
@@ -130,7 +128,7 @@ export async function deleteAnnouncement(id: string): Promise<void> {
   if (error) throw error
 }
 
-// ── Admin: reps (profiles) ──
+// Admin: reps (profiles)
 
 export async function fetchProfiles(): Promise<Profile[]> {
   const { data, error } = await supabase
@@ -152,7 +150,7 @@ export async function setProfileRole(id: string, role: Role): Promise<void> {
   if (error) throw error
 }
 
-// ── Sales (admin reporting; optional rep self-view) ──
+// Sales (admin reporting; optional rep self-view)
 
 export async function fetchSales(): Promise<Sale[]> {
   const { data, error } = await supabase

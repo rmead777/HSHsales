@@ -13,6 +13,7 @@ import { Field, Input } from '../../components/ui/Field'
 import { ConfirmButton } from '../../components/ui/ConfirmButton'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { LoadError } from '../../components/ui/LoadError'
 import { resolveLinkIcon } from '../../lib/linkIcon'
 import { isHttpUrl } from '../../lib/validate'
 import { springs, staggerItem, staggerParent } from '../../lib/motion'
@@ -27,7 +28,7 @@ const EMPTY: FormState = { label: '', url: '', icon: '' }
 
 export function AdminLinks() {
   const { show } = useToast()
-  const { data, loading, reload } = useAsync(fetchAllLinks, [])
+  const { data, loading, error, reload } = useAsync(fetchAllLinks, [])
   const [list, setList] = useState<LinkRow[]>([])
   const [editing, setEditing] = useState<LinkRow | null>(null)
   const [creating, setCreating] = useState(false)
@@ -95,6 +96,8 @@ export function AdminLinks() {
 
       {loading ? (
         <ListSkeleton />
+      ) : error ? (
+        <LoadError title="Links unavailable" onRetry={reload} />
       ) : list.length === 0 ? (
         <EmptyState
           icon={LinkIcon}
@@ -234,7 +237,10 @@ function LinkForm({
 
   // Reseed when the sheet opens (initial changes identity across edits).
   useEffect(() => {
-    if (open) setForm(initial)
+    if (open) {
+      setForm(initial)
+      setSaving(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 

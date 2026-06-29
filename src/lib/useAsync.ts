@@ -14,12 +14,11 @@ interface AsyncState<T> {
 
 /**
  * Minimal data-loading hook. Pass the dependency values that should re-trigger the fetch.
- * Refetches on window focus by default — matches the spec's "fetch on load + on focus" rule.
+ * Refetches on window focus by default. Older requests are ignored if a newer one starts.
  *
- * `run` is intentionally STABLE (empty deps). The caller's `deps` drive the *effect* that calls it,
- * NOT `run`'s identity — otherwise a fresh `[]` literal each render would recreate `run`, refire the
- * effect, setData, re-render… i.e. an infinite refetch loop. The latest `fn` is read via a ref so an
- * inline `fn` doesn't go stale without retriggering.
+ * `run` is intentionally stable. The caller's `deps` drive the effect that calls it.
+ * The latest `fn` is read via a ref so inline functions do not go stale without
+ * retriggering.
  */
 export function useAsync<T>(
   fn: () => Promise<T>,
@@ -31,19 +30,41 @@ export function useAsync<T>(
   const [error, setError] = useState<string | null>(null)
 
   const fnRef = useRef(fn)
+  const mountedRef = useRef(false)
+  const requestIdRef = useRef(0)
+
   useEffect(() => {
     fnRef.current = fn
   })
 
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      requestIdRef.current += 1
+    }
+  }, [])
+
   const run = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+    const requestId = requestIdRef.current + 1
+    requestIdRef.current = requestId
+    if (mountedRef.current) {
+      setLoading(true)
+      setError(null)
+    }
     try {
-      setData(await fnRef.current())
+      const next = await fnRef.current()
+      if (mountedRef.current && requestIdRef.current === requestId) {
+        setData(next)
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load')
+      if (mountedRef.current && requestIdRef.current === requestId) {
+        setError(e instanceof Error ? e.message : 'Failed to load')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current && requestIdRef.current === requestId) {
+        setLoading(false)
+      }
     }
   }, [])
 

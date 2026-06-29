@@ -14,6 +14,7 @@ import { Field, Input, Textarea } from '../../components/ui/Field'
 import { ConfirmButton } from '../../components/ui/ConfirmButton'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { LoadError } from '../../components/ui/LoadError'
 import { isHttpUrl } from '../../lib/validate'
 import { springs, staggerItem, staggerParent } from '../../lib/motion'
 import type { Product } from '../../lib/database.types'
@@ -29,7 +30,7 @@ const EMPTY: FormState = { name: '', description: '', image_url: '', price_displ
 
 export function AdminProducts() {
   const { show } = useToast()
-  const { data, loading, reload } = useAsync(fetchAllProducts, [])
+  const { data, loading, error, reload } = useAsync(fetchAllProducts, [])
   const [list, setList] = useState<Product[]>([])
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
@@ -97,6 +98,8 @@ export function AdminProducts() {
 
       {loading ? (
         <ListSkeleton />
+      ) : error ? (
+        <LoadError title="Products unavailable" onRetry={reload} />
       ) : list.length === 0 ? (
         <EmptyState
           icon={Package}
@@ -263,7 +266,10 @@ function ProductForm({
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (open) setForm(initial)
+    if (open) {
+      setForm(initial)
+      setSaving(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 

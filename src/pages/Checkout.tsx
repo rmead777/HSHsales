@@ -13,6 +13,7 @@ import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
+import { LoadError } from '../components/ui/LoadError'
 import { Sheet } from '../components/ui/Sheet'
 import { QrCard } from '../components/QrCard'
 import { BrandMark } from '../components/BrandMark'
@@ -53,6 +54,8 @@ export function Checkout() {
 
       {products.loading ? (
         <ProductsSkeleton />
+      ) : products.error ? (
+        <LoadError title="Products unavailable" onRetry={products.reload} />
       ) : products.data && products.data.length > 0 ? (
         <motion.div
           variants={staggerParent}

@@ -10,6 +10,7 @@ import { copyText, shareOrCopy } from '../lib/share'
 import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
 import { Skeleton } from '../components/ui/Skeleton'
+import { LoadError } from '../components/ui/LoadError'
 import { QrCard } from '../components/QrCard'
 import { staggerItem, staggerParent } from '../lib/motion'
 import { cn } from '../lib/cn'
@@ -54,6 +55,8 @@ export function QRCodes() {
 
       {products.loading ? (
         <ChannelSkeleton />
+      ) : products.error ? (
+        <LoadError title="QR products unavailable" onRetry={products.reload} />
       ) : (
         <motion.div variants={staggerParent} initial="initial" animate="animate" className="flex flex-col gap-5">
           <ChannelCard
