@@ -15,10 +15,26 @@ export function sanitizeRepCode(repCode: string): string {
  * (handles `?` vs `&` automatically). Throws on a malformed base URL. Use the
  * `safe*` variant in UI where the admin may have pasted something invalid.
  */
-export function buildAttributedPaymentLink(paymentLinkUrl: string, repCode: string): string {
+export function buildAttributedPaymentLink(
+  paymentLinkUrl: string,
+  repCode: string,
+  promoCode?: string | null,
+): string {
   const url = new URL(paymentLinkUrl)
   url.searchParams.set('client_reference_id', sanitizeRepCode(repCode))
+  // Optional product-wide discount: Stripe fills the promotion code in for the buyer.
+  // Works only if the Payment Link allows promotion codes and the code exists in Stripe.
+  const promo = promoCode?.trim()
+  if (promo) url.searchParams.set('prefilled_promo_code', promo)
   return url.toString()
+}
+
+/** A product's checkout link for this rep, with the product's discount code if it has one. */
+export function productCheckoutUrl(
+  product: { stripe_payment_link: string; promo_code?: string | null },
+  repCode: string,
+): string | null {
+  return safeBuildAttributedPaymentLink(product.stripe_payment_link, repCode, product.promo_code)
 }
 
 /** Top-of-funnel demo link carries the rep as `?ref={rep_code}`. */
@@ -29,9 +45,13 @@ export function buildDemoUrl(demoBaseUrl: string, repCode: string): string {
 }
 
 /** Non-throwing wrappers for UI: return null instead of crashing on a bad base URL. */
-export function safeBuildAttributedPaymentLink(paymentLinkUrl: string, repCode: string): string | null {
+export function safeBuildAttributedPaymentLink(
+  paymentLinkUrl: string,
+  repCode: string,
+  promoCode?: string | null,
+): string | null {
   try {
-    return buildAttributedPaymentLink(paymentLinkUrl, repCode)
+    return buildAttributedPaymentLink(paymentLinkUrl, repCode, promoCode)
   } catch {
     return null
   }

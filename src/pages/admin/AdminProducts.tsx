@@ -16,8 +16,10 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { LoadError } from '../../components/ui/LoadError'
 import { isHttpUrl } from '../../lib/validate'
+import { parseMoneyToCents, parseRuleValue, ruleOf, shortRule } from '../../lib/commission'
+import { cn } from '../../lib/cn'
 import { springs, staggerItem, staggerParent } from '../../lib/motion'
-import type { Product } from '../../lib/database.types'
+import type { CommissionType, Product } from '../../lib/database.types'
 
 interface FormState {
   name: string
@@ -25,8 +27,52 @@ interface FormState {
   image_url: string
   price_display: string
   stripe_payment_link: string
+  price: string
+  commission_type: CommissionType
+  commission_value: string
+  promo_code: string
 }
-const EMPTY: FormState = { name: '', description: '', image_url: '', price_display: '', stripe_payment_link: '' }
+const EMPTY: FormState = {
+  name: '',
+  description: '',
+  image_url: '',
+  price_display: '',
+  stripe_payment_link: '',
+  price: '',
+  commission_type: 'percent',
+  commission_value: '',
+  promo_code: '',
+}
+
+function toForm(p: Product): FormState {
+  return {
+    name: p.name,
+    description: p.description ?? '',
+    image_url: p.image_url ?? '',
+    price_display: p.price_display ?? '',
+    stripe_payment_link: p.stripe_payment_link,
+    price: p.price_cents == null ? '' : (p.price_cents / 100).toFixed(2).replace(/\.00$/, ''),
+    commission_type: p.commission_type ?? 'percent',
+    commission_value: p.commission_value == null ? '' : String(p.commission_value),
+    promo_code: p.promo_code ?? '',
+  }
+}
+
+/** Form -> product columns. A blank commission means none is set. */
+function fromForm(form: FormState) {
+  const value = form.commission_value.trim() ? parseRuleValue(form.commission_value) : null
+  return {
+    name: form.name.trim(),
+    description: form.description.trim() || null,
+    image_url: form.image_url.trim() || null,
+    price_display: form.price_display.trim() || null,
+    stripe_payment_link: form.stripe_payment_link.trim(),
+    price_cents: form.price.trim() ? parseMoneyToCents(form.price) : null,
+    commission_type: value == null ? null : form.commission_type,
+    commission_value: value,
+    promo_code: form.promo_code.trim() || null,
+  }
+}
 
 export function AdminProducts() {
   const { show } = useToast()
@@ -135,14 +181,7 @@ export function AdminProducts() {
         initial={EMPTY}
         onSubmit={async (form) => {
           const sort_order = (list.at(-1)?.sort_order ?? 0) + 1
-          const created = await createProduct({
-            name: form.name.trim(),
-            description: form.description.trim() || null,
-            image_url: form.image_url.trim() || null,
-            price_display: form.price_display.trim() || null,
-            stripe_payment_link: form.stripe_payment_link.trim(),
-            sort_order,
-          })
+          const created = await createProduct({ ...fromForm(form), sort_order })
           setList((prev) => [...prev, created])
           setCreating(false)
           show('Product added', 'success')
@@ -153,26 +192,10 @@ export function AdminProducts() {
         open={!!editing}
         onClose={() => setEditing(null)}
         title="Edit product"
-        initial={
-          editing
-            ? {
-                name: editing.name,
-                description: editing.description ?? '',
-                image_url: editing.image_url ?? '',
-                price_display: editing.price_display ?? '',
-                stripe_payment_link: editing.stripe_payment_link,
-              }
-            : EMPTY
-        }
+        initial={editing ? toForm(editing) : EMPTY}
         onSubmit={async (form) => {
           if (!editing) return
-          const patch = {
-            name: form.name.trim(),
-            description: form.description.trim() || null,
-            image_url: form.image_url.trim() || null,
-            price_display: form.price_display.trim() || null,
-            stripe_payment_link: form.stripe_payment_link.trim(),
-          }
+          const patch = fromForm(form)
           setList((prev) => prev.map((x) => (x.id === editing.id ? { ...x, ...patch } : x)))
           await updateProduct(editing.id, patch)
           setEditing(null)
@@ -238,6 +261,14 @@ function ProductRowCard({
               )}
             </div>
             <p className="mt-0.5 truncate font-mono text-xs text-white/42">{product.stripe_payment_link}</p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {ruleOf(product) ? (
+                <Badge tone="money">Commission {shortRule(ruleOf(product))}</Badge>
+              ) : (
+                <Badge tone="warn">No commission set</Badge>
+              )}
+              {product.promo_code && <Badge tone="demo">Code {product.promo_code}</Badge>}
+            </div>
           </div>
         </div>
         <div className="col-start-2 flex min-w-0 items-center justify-between gap-2 border-t border-white/10 pt-3 sm:col-auto sm:ml-auto sm:border-0 sm:pt-0">
@@ -284,7 +315,13 @@ function ProductForm({
 
   const linkOk = isHttpUrl(form.stripe_payment_link.trim())
   const imageOk = !form.image_url.trim() || isHttpUrl(form.image_url.trim())
-  const valid = form.name.trim().length > 0 && linkOk && imageOk
+  const priceOk = !form.price.trim() || parseMoneyToCents(form.price) != null
+  const ruleValue = form.commission_value.trim() ? parseRuleValue(form.commission_value) : null
+  const ruleOk =
+    !form.commission_value.trim() ||
+    (ruleValue != null && (form.commission_type === 'flat' || ruleValue <= 100))
+  const promoOk = !form.promo_code.trim() || /^[A-Za-z0-9_-]+$/.test(form.promo_code.trim())
+  const valid = form.name.trim().length > 0 && linkOk && imageOk && priceOk && ruleOk && promoOk
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -304,7 +341,7 @@ function ProductForm({
           <Input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="1,000 Interactive Coasters"
+            placeholder="High Score Host Launch Kit"
             required
           />
         </Field>
@@ -321,11 +358,85 @@ function ProductForm({
             required
           />
         </Field>
-        <Field label="Price label" hint="Display only - not what Stripe charges.">
+        <Field
+          label="Price Stripe charges"
+          hint="In dollars. Used to show reps what they earn per sale."
+          error={!priceOk ? 'Enter an amount like 999 or 999.00' : undefined}
+        >
+          <Input
+            value={form.price}
+            onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+            placeholder="999"
+            inputMode="decimal"
+          />
+        </Field>
+        <div>
+          <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-white/48">Commission</span>
+          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Commission type">
+            {(
+              [
+                ['percent', '% of each sale'],
+                ['flat', '$ per sale'],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={form.commission_type === value}
+                onClick={() => setForm((f) => ({ ...f, commission_type: value }))}
+                className={cn(
+                  'h-11 rounded-[8px] border text-sm font-bold transition-colors',
+                  form.commission_type === value
+                    ? 'border-money-300/40 bg-money-400/16 text-money-100'
+                    : 'border-white/12 bg-black/28 text-white/56 hover:border-white/24',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-2">
+            <Input
+              value={form.commission_value}
+              onChange={(e) => setForm((f) => ({ ...f, commission_value: e.target.value }))}
+              placeholder={form.commission_type === 'percent' ? '10' : '100'}
+              inputMode="decimal"
+              aria-label={form.commission_type === 'percent' ? 'Commission percent' : 'Commission dollars per sale'}
+            />
+          </div>
+          <span
+            className={cn(
+              'mt-2 block text-xs leading-relaxed',
+              ruleOk ? 'text-white/42' : 'font-semibold text-danger-400',
+            )}
+          >
+            {!ruleOk
+              ? form.commission_type === 'percent'
+                ? 'Enter a percent from 0 to 100'
+                : 'Enter a dollar amount'
+              : form.commission_type === 'percent'
+                ? 'Percent of what the customer pays, before tax. Leave blank for no commission. A rep with their own rate (Reps tab) gets that instead.'
+                : 'Dollars per sale. Leave blank for no commission. A rep with their own rate (Reps tab) gets that instead.'}
+          </span>
+        </div>
+        <Field
+          label="Discount code (optional)"
+          hint="A Stripe promotion code filled in for the buyer on every rep link. Create it in Stripe first, and allow promotion codes on the Payment Link."
+          error={!promoOk ? 'Letters, numbers, dashes and underscores only' : undefined}
+        >
+          <Input
+            value={form.promo_code}
+            onChange={(e) => setForm((f) => ({ ...f, promo_code: e.target.value }))}
+            placeholder="LAUNCH20"
+            autoCapitalize="characters"
+          />
+        </Field>
+        <Field label="Price label" hint='What reps and buyers see, like "$999 (lifetime license)".'>
           <Input
             value={form.price_display}
             onChange={(e) => setForm((f) => ({ ...f, price_display: e.target.value }))}
-            placeholder="$1,000 (lifetime license + swag)"
+            placeholder="$999 (lifetime license + marketing materials)"
           />
         </Field>
         <Field label="Description">

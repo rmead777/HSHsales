@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import { useAsync } from '../lib/useAsync'
 import { fetchActiveProducts } from '../lib/queries'
-import { safeBuildAttributedPaymentLink, safeBuildDemoUrl } from '../lib/attribution'
+import { productCheckoutUrl, safeBuildDemoUrl } from '../lib/attribution'
 import { copyText, shareOrCopy } from '../lib/share'
 import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
@@ -37,7 +37,7 @@ export function QRCodes() {
   const list = products.data ?? []
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = list.find((p) => p.id === selectedId) ?? list[0] ?? null
-  const checkoutUrl = selected ? safeBuildAttributedPaymentLink(selected.stripe_payment_link, repCode) : null
+  const checkoutUrl = selected ? productCheckoutUrl(selected, repCode) : null
 
   return (
     <div className="flex flex-col gap-6">

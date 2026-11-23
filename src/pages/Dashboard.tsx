@@ -1,26 +1,29 @@
 import { Link as RouterLink } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import {
   ArrowRight,
   CreditCard,
   ExternalLink,
-  Gamepad2,
   LayoutGrid,
   Megaphone,
   QrCode,
   Sparkles,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useAsync } from '../lib/useAsync'
-import { fetchActiveAnnouncements, fetchActiveLinks } from '../lib/queries'
+import { formatDate } from '../lib/format'
+import { fetchActiveAnnouncements, fetchActiveLinks, fetchMyEarnings, fetchMySales } from '../lib/queries'
+import { formatAmount } from '../lib/format'
+import { isThisMonth } from '../lib/commission'
+import { SALE_EVENT } from '../lib/useSaleAlerts'
 import { resolveLinkIcon } from '../lib/linkIcon'
 import { Skeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
 import { LoadError } from '../components/ui/LoadError'
 import { Button } from '../components/ui/Button'
-import { Badge } from '../components/ui/Badge'
 import { BrandMark } from '../components/BrandMark'
 import { springs, staggerItem, staggerParent } from '../lib/motion'
 import type { Announcement, Link as LinkRow } from '../lib/database.types'
@@ -31,20 +34,43 @@ export function Dashboard() {
   const announcements = useAsync(fetchActiveAnnouncements, [])
   const firstName = (profile?.full_name ?? '').trim().split(' ')[0] || 'there'
   const repCode = profile?.rep_code ?? 'PENDING'
-  const linkCount = links.data?.length ?? 0
+  const profileId = profile?.id ?? ''
+  const earnings = useAsync(() => (profileId ? fetchMyEarnings(profileId) : Promise.resolve(null)), [profileId])
+  const sales = useAsync(
+    () => (profile?.rep_code ? fetchMySales(profile.rep_code) : Promise.resolve([])),
+    [profile?.rep_code],
+  )
+  const monthSales = (sales.data ?? []).filter(
+    (s) => isThisMonth(s.created_at) && (s.payment_status === 'paid' || s.payment_status === 'no_payment_required'),
+  ).length
+
+  useEffect(() => {
+    const reload = () => {
+      void earnings.reload()
+      void sales.reload()
+    }
+    window.addEventListener(SALE_EVENT, reload)
+    return () => window.removeEventListener(SALE_EVENT, reload)
+  }, [earnings, sales])
 
   return (
     <div className="flex flex-col gap-6">
-      <Hero firstName={firstName} repCode={repCode} linkCount={linkCount} isAdmin={isAdmin} />
+      <Hero
+        firstName={firstName}
+        repCode={repCode}
+        monthSales={sales.data ? monthSales : null}
+        owedCents={earnings.data?.balance_cents ?? null}
+        earnedCents={earnings.data?.earned_cents ?? null}
+      />
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <SectionHeading icon={Sparkles} title="Next best move" />
+          <SectionHeading icon={Sparkles} title="Start a sale" />
         </div>
         <div className="grid grid-cols-3 gap-2">
-          <ActionCard to="/qr" icon={QrCode} title="Scan" tone="demo" />
-          <ActionCard to="/checkout" icon={CreditCard} title="Sell" tone="money" />
-          <ActionCard to={isAdmin ? '/admin' : '/qr'} icon={isAdmin ? LayoutGrid : Gamepad2} title={isAdmin ? 'Admin' : 'Demo'} tone="primary" />
+          <ActionCard to="/qr" icon={QrCode} title="QR code" tone="demo" />
+          <ActionCard to="/checkout" icon={CreditCard} title="Checkout" tone="money" />
+          <ActionCard to="/earnings" icon={Wallet} title="Earnings" tone="primary" />
         </div>
       </section>
 
@@ -79,7 +105,7 @@ export function Dashboard() {
             description={
               isAdmin
                 ? 'Add a deck, pricing sheet, video, or training link. It appears here instantly.'
-                : "Your admin has not added links yet. The cabinet is warming up."
+                : "Your admin hasn't added any links yet."
             }
             action={
               isAdmin ? (
@@ -98,20 +124,30 @@ export function Dashboard() {
 function Hero({
   firstName,
   repCode,
-  linkCount,
-  isAdmin,
+  monthSales,
+  owedCents,
+  earnedCents,
 }: {
   firstName: string
   repCode: string
-  linkCount: number
-  isAdmin: boolean
+  monthSales: number | null
+  owedCents: number | null
+  earnedCents: number | null
 }) {
+  const monthLine =
+    monthSales == null
+      ? 'Your sales'
+      : monthSales === 0
+        ? 'No sales yet this month'
+        : monthSales === 1
+          ? '1 sale this month'
+          : `${monthSales} sales this month`
   return (
     <GlassHero>
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-demo-300">Ready player</p>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-demo-300">{monthLine}</p>
             <h1 className="mt-2 font-display text-4xl font-extrabold leading-none tracking-[-0.05em] text-chrome">
               Hi, {firstName}
             </h1>
@@ -120,14 +156,14 @@ function Hero({
         </div>
 
         <p className="mt-4 max-w-sm text-sm leading-6 text-white/58">
-          Open a tagged QR, send checkout, or pull the right sales asset before the buyer's coffee
-          gets cold.
+          Show a customer your QR code or send them your checkout link. Every sale through them is
+          credited to you.
         </p>
 
         <div className="mt-5 grid grid-cols-3 gap-2">
-          <HeroMetric label="Rep" value={repCode} />
-          <HeroMetric label="Kit" value={`${linkCount}`} />
-          <HeroMetric label="Mode" value={isAdmin ? 'Admin' : 'Rep'} />
+          <HeroMetric label="Your code" value={repCode} mono />
+          <HeroMetric label="Owed to you" value={owedCents == null ? '-' : formatAmount(owedCents, 'usd')} />
+          <HeroMetric label="Earned" value={earnedCents == null ? '-' : formatAmount(earnedCents, 'usd')} />
         </div>
       </div>
     </GlassHero>
@@ -148,11 +184,11 @@ function GlassHero({ children }: { children: ReactNode }) {
   )
 }
 
-function HeroMetric({ label, value }: { label: string; value: string }) {
+function HeroMetric({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="rounded-[8px] border border-white/10 bg-black/28 px-3 py-3">
-      <p className="text-[0.62rem] font-black uppercase tracking-[0.16em] text-white/34">{label}</p>
-      <p className="mt-1 truncate font-mono text-sm font-bold text-white tnum">{value}</p>
+    <div className="flex flex-col justify-between rounded-[8px] border border-white/10 bg-black/28 px-3 py-3">
+      <p className="text-[0.62rem] font-black uppercase tracking-[0.16em] text-white/40">{label}</p>
+      <p className={`mt-1 truncate text-sm font-bold text-white tnum ${mono ? 'font-mono' : ''}`}>{value}</p>
     </div>
   )
 }
@@ -192,8 +228,10 @@ function ActionCard({
       >
         <Icon className="size-5" />
         <div className="flex items-center justify-between gap-2">
-          <span className="font-display text-lg font-extrabold tracking-[-0.03em] text-white">{title}</span>
-          <ArrowRight className="size-4 opacity-70" />
+          <span className="whitespace-nowrap font-display text-base font-extrabold tracking-[-0.03em] text-white sm:text-lg">
+            {title}
+          </span>
+          <ArrowRight className="hidden size-4 shrink-0 opacity-70 min-[420px]:block" />
         </div>
       </motion.div>
     </RouterLink>
@@ -240,8 +278,8 @@ function AnnouncementsBlock({
   if (error) {
     return (
       <section>
-        <SectionHeading icon={Megaphone} title="Broadcast" />
-        <LoadError title="Broadcast unavailable" onRetry={() => void onRetry()} />
+        <SectionHeading icon={Megaphone} title="Team news" />
+        <LoadError title="Team news could not load" onRetry={() => void onRetry()} />
       </section>
     )
   }
@@ -249,7 +287,7 @@ function AnnouncementsBlock({
   const [latest, ...rest] = items
   return (
     <section>
-      <SectionHeading icon={Megaphone} title="Broadcast" />
+      <SectionHeading icon={Megaphone} title="Team news" />
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0, transition: springs.standardExpressive }}
@@ -257,8 +295,8 @@ function AnnouncementsBlock({
       >
         <div className="relative overflow-hidden rounded-[8px] border border-danger-400/24 bg-danger-500/12 p-5 text-white shadow-[0_16px_40px_-26px_rgba(255,36,72,0.8)]">
           <div className="relative mb-2 flex items-center justify-between gap-3">
-            <span className="text-xs font-black uppercase tracking-[0.2em] text-danger-200">Priority note</span>
-            <Badge tone="danger">Live</Badge>
+            <span className="text-xs font-black uppercase tracking-[0.2em] text-danger-200">Latest</span>
+            <span className="text-xs text-white/46">{formatDate(latest.created_at)}</span>
           </div>
           <p className="relative text-[0.95rem] font-semibold leading-relaxed text-white/82">{latest.body}</p>
         </div>

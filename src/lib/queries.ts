@@ -1,5 +1,15 @@
 import { supabase } from './supabaseClient'
-import type { Announcement, Link, Product, Profile, Role, Sale } from './database.types'
+import type {
+  Announcement,
+  CommissionType,
+  Link,
+  Payout,
+  Product,
+  Profile,
+  RepEarnings,
+  Role,
+  Sale,
+} from './database.types'
 
 // All access goes through these typed helpers; components never call `supabase`
 // directly. Reads are RLS-gated server-side: an inactive rep simply gets zero rows.
@@ -169,4 +179,100 @@ export async function fetchMySales(repCode: string): Promise<Sale[]> {
     .order('created_at', { ascending: false })
   if (error) throw error
   return data ?? []
+}
+
+// Commissions (migration 0005)
+
+/** The signed-in person's own balance row. Filtered by id because admins can read every row. */
+export async function fetchMyEarnings(profileId: string): Promise<RepEarnings | null> {
+  const { data, error } = await supabase.from('rep_earnings').select('*').eq('rep_id', profileId).maybeSingle()
+  if (error) throw error
+  return data
+}
+
+export async function fetchMyPayouts(repCode: string): Promise<Payout[]> {
+  const { data, error } = await supabase
+    .from('payouts')
+    .select('*')
+    .eq('rep_code', repCode)
+    .order('paid_on', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+/** Admin: every person's sales, earned, paid and owed. */
+export async function fetchRepEarnings(): Promise<RepEarnings[]> {
+  const { data, error } = await supabase
+    .from('rep_earnings')
+    .select('*')
+    .order('revenue_cents', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function fetchPayouts(): Promise<Payout[]> {
+  const { data, error } = await supabase.from('payouts').select('*').order('paid_on', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function createPayout(input: {
+  rep_code: string
+  amount_cents: number
+  paid_on: string
+  note: string | null
+}): Promise<Payout> {
+  const { data, error } = await supabase.from('payouts').insert(input).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function deletePayout(id: string): Promise<void> {
+  const { error } = await supabase.from('payouts').delete().eq('id', id)
+  if (error) throw error
+}
+
+/** Admin edits to a sale. The database recomputes the commission. */
+export async function updateSale(
+  id: string,
+  patch: Partial<Pick<Sale, 'rep_code' | 'product_id' | 'product_name' | 'commission_override_cents' | 'note'>>,
+): Promise<Sale> {
+  const { data, error } = await supabase.from('sales').update(patch).eq('id', id).select().single()
+  if (error) throw error
+  return data
+}
+
+/** Admin: a sale made outside the app's Stripe links (invoice, cash, the website). */
+export async function createManualSale(input: {
+  rep_code: string | null
+  product_id: string | null
+  product_name: string | null
+  amount: number
+  customer_name: string | null
+  customer_email: string | null
+  note: string | null
+  created_at: string
+}): Promise<Sale> {
+  const { data, error } = await supabase
+    .from('sales')
+    .insert({ ...input, source: 'manual', currency: 'usd', payment_status: 'paid' })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+/** Only manual sales can be deleted (RLS); Stripe sales are corrected instead. */
+export async function deleteSale(id: string): Promise<void> {
+  const { error } = await supabase.from('sales').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function setProfileCommission(
+  id: string,
+  commission_type: CommissionType | null,
+  commission_value: number | null,
+): Promise<void> {
+  const { error } = await supabase.from('profiles').update({ commission_type, commission_value }).eq('id', id)
+  if (error) throw error
 }

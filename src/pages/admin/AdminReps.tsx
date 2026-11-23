@@ -1,10 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { motion } from 'motion/react'
 import { ShieldCheck, Users } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import { useAsync } from '../../lib/useAsync'
-import { fetchProfiles, setProfileActive, setProfileRole } from '../../lib/queries'
+import {
+  fetchProfiles,
+  fetchRepEarnings,
+  setProfileActive,
+  setProfileCommission,
+  setProfileRole,
+} from '../../lib/queries'
 import { AdminHeader } from '../../components/admin/AdminHeader'
 import { GlassCard } from '../../components/ui/GlassCard'
 import { Switch } from '../../components/ui/Switch'
@@ -13,17 +19,26 @@ import { Button } from '../../components/ui/Button'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { LoadError } from '../../components/ui/LoadError'
-import { formatDate } from '../../lib/format'
+import { formatAmount, formatDate } from '../../lib/format'
+import { parseRuleValue, ruleOf, shortRule } from '../../lib/commission'
+import { Sheet } from '../../components/ui/Sheet'
+import { Input } from '../../components/ui/Field'
 import { staggerItem, staggerParent } from '../../lib/motion'
 import { cn } from '../../lib/cn'
-import type { Profile, Role } from '../../lib/database.types'
+import type { CommissionType, Profile, Role } from '../../lib/database.types'
 
 export function AdminReps() {
   const { user } = useAuth()
   const { show } = useToast()
   const { data, loading, error, reload } = useAsync(fetchProfiles, [])
+  const earnings = useAsync(fetchRepEarnings, [])
+  const owedByCode = useMemo(
+    () => new Map((earnings.data ?? []).map((e) => [e.rep_code, e.balance_cents])),
+    [earnings.data],
+  )
   const [list, setList] = useState<Profile[]>([])
   const [mutating, setMutating] = useState<Set<string>>(new Set())
+  const [rateFor, setRateFor] = useState<Profile | null>(null)
 
   useEffect(() => {
     if (data) setList(data)
@@ -126,15 +141,27 @@ export function AdminReps() {
                     />
                   </div>
                   <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
-                    <span className="text-xs text-white/38">Joined {formatDate(p.created_at)}</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={isSelf || mutating.has(p.id)}
-                      onClick={() => toggleRole(p)}
-                    >
-                      {p.role === 'admin' ? 'Make rep' : 'Make admin'}
-                    </Button>
+                    <span className="text-xs text-white/38">
+                      Joined {formatDate(p.created_at)}
+                      {owedByCode.get(p.rep_code) ? (
+                        <span className="ml-2 font-semibold text-money-200 tnum">
+                          Owed {formatAmount(owedByCode.get(p.rep_code) ?? 0, 'usd')}
+                        </span>
+                      ) : null}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => setRateFor(p)}>
+                        Rate: {ruleOf(p) ? shortRule(ruleOf(p)) : 'product'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={isSelf || mutating.has(p.id)}
+                        onClick={() => toggleRole(p)}
+                      >
+                        {p.role === 'admin' ? 'Make rep' : 'Make admin'}
+                      </Button>
+                    </div>
                   </div>
                 </GlassCard>
               </motion.div>
@@ -142,7 +169,115 @@ export function AdminReps() {
           })}
         </motion.div>
       )}
+
+      <RateSheet
+        profile={rateFor}
+        onClose={() => setRateFor(null)}
+        onSave={async (type, value) => {
+          if (!rateFor) return
+          await setProfileCommission(rateFor.id, type, value)
+          setList((prev) =>
+            prev.map((x) => (x.id === rateFor.id ? { ...x, commission_type: type, commission_value: value } : x)),
+          )
+          show(type ? `${displayName(rateFor)} now earns ${shortRule({ type, value: value ?? 0 })}` : `${displayName(rateFor)} uses product rates`, 'success')
+          setRateFor(null)
+        }}
+      />
     </div>
+  )
+}
+
+type RateChoice = 'product' | CommissionType
+
+/** A rep's own commission rate. It replaces product rates on that rep's new sales. */
+function RateSheet({
+  profile,
+  onClose,
+  onSave,
+}: {
+  profile: Profile | null
+  onClose: () => void
+  onSave: (type: CommissionType | null, value: number | null) => Promise<void>
+}) {
+  const [choice, setChoice] = useState<RateChoice>('product')
+  const [value, setValue] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!profile) return
+    setChoice(profile.commission_type ?? 'product')
+    setValue(profile.commission_value == null ? '' : String(profile.commission_value))
+    setSaving(false)
+  }, [profile])
+
+  const parsed = parseRuleValue(value)
+  const valid = choice === 'product' || (parsed != null && (choice === 'flat' || parsed <= 100))
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!valid) return
+    setSaving(true)
+    try {
+      await onSave(choice === 'product' ? null : choice, choice === 'product' ? null : parsed)
+    } catch {
+      setSaving(false)
+    }
+  }
+
+  const options: Array<[RateChoice, string]> = [
+    ['product', 'Product rates'],
+    ['percent', '% of sale'],
+    ['flat', '$ per sale'],
+  ]
+
+  return (
+    <Sheet open={!!profile} onClose={onClose} title={`Commission for ${profile ? displayName(profile) : ''}`}>
+      <form onSubmit={submit} className="flex flex-col gap-4">
+        <p className="text-sm leading-6 text-white/58">
+          By default each sale earns the rate set on its product. Give this person their own rate and it
+          applies to their new sales instead. Past sales keep the rate they were recorded with.
+        </p>
+        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Commission rate">
+          {options.map(([opt, label]) => (
+            <button
+              key={opt}
+              type="button"
+              role="radio"
+              aria-checked={choice === opt}
+              onClick={() => setChoice(opt)}
+              className={cn(
+                'h-11 rounded-[8px] border text-sm font-bold transition-colors',
+                choice === opt
+                  ? 'border-money-300/40 bg-money-400/16 text-money-100'
+                  : 'border-white/12 bg-black/28 text-white/56 hover:border-white/24',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {choice !== 'product' && (
+          <div>
+            <Input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={choice === 'percent' ? '10' : '100'}
+              inputMode="decimal"
+              aria-label={choice === 'percent' ? 'Percent of each sale' : 'Dollars per sale'}
+              autoFocus
+            />
+            {!valid && value.trim() && (
+              <span className="mt-2 block text-xs font-semibold text-danger-400">
+                {choice === 'percent' ? 'Enter a percent from 0 to 100' : 'Enter a dollar amount'}
+              </span>
+            )}
+          </div>
+        )}
+        <Button type="submit" fullWidth loading={saving} disabled={!valid}>
+          Save
+        </Button>
+      </form>
+    </Sheet>
   )
 }
 

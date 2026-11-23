@@ -10,6 +10,7 @@ const PendingActivation = lazy(() => import('./pages/PendingActivation').then((m
 const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
 const Checkout = lazy(() => import('./pages/Checkout').then((m) => ({ default: m.Checkout })))
 const QRCodes = lazy(() => import('./pages/QRCodes').then((m) => ({ default: m.QRCodes })))
+const Earnings = lazy(() => import('./pages/Earnings').then((m) => ({ default: m.Earnings })))
 const loadAdminPages = () => import('./pages/admin')
 const AdminReps = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminReps })))
 const AdminLinks = lazy(() => loadAdminPages().then((m) => ({ default: m.AdminLinks })))
@@ -36,6 +37,7 @@ export function App() {
             <Route index element={<Dashboard />} />
             <Route path="checkout" element={<Checkout />} />
             <Route path="qr" element={<QRCodes />} />
+            <Route path="earnings" element={<Earnings />} />
           </Route>
         </Route>
 

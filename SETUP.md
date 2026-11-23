@@ -36,6 +36,9 @@ This Claude session's Supabase MCP is logged into a different account than the o
    links/products/announcements (idempotent; only seeds empty tables).
 4. Paste & run [`supabase/migrations/0003_allow_admin_bootstrap.sql`](supabase/migrations/0003_allow_admin_bootstrap.sql)
    — lets the SQL editor create the first admin (the anti-escalation trigger otherwise blocks it).
+5. Paste & run [`supabase/migrations/0004_add_query_indexes.sql`](supabase/migrations/0004_add_query_indexes.sql)
+   and [`supabase/migrations/0005_commissions.sql`](supabase/migrations/0005_commissions.sql) — commissions,
+   payouts, rep balances and live sale alerts.
 
 > If you later restart Claude Code with the Supabase connector authed to the owning account, the MCP
 > can apply these for you instead (`apply_migration`). Or use the CLI if it's linked to this project.
@@ -105,13 +108,24 @@ Also add the two `VITE_*` client vars in Vercel so the production build picks th
 1. Deploy the app to Vercel first (§5) so the endpoint exists.
 2. Stripe Dashboard → **Developers → Webhooks → Add endpoint**:
    - **URL**: `https://your-app.vercel.app/api/stripe-webhook`
-   - **Events**: `checkout.session.completed`
+   - **Events**: `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+     `checkout.session.async_payment_failed`, `charge.refunded` (refunds and bank payments adjust commission)
 3. Copy the **Signing secret** (`whsec_...`) → set `STRIPE_WEBHOOK_SECRET` in Vercel, then redeploy.
 4. Test: Stripe → the webhook → **Send test event** (`checkout.session.completed`), or do a real
    test-mode purchase via a rep's link. Confirm a row lands in `public.sales` with the rep's `rep_code`,
    and that it shows in **Admin → Sales**.
 
 ---
+
+### 4c. Commissions
+1. **Admin → Products → edit each product**: set *Price Stripe charges* and *Commission* (% of each sale or
+   $ per sale). A product with no commission shows "No commission set" and earns nothing until set; sales
+   made meanwhile pick up the rate as soon as it's set.
+2. Optional: **Admin → Reps → Rate** gives one rep their own rate for their new sales.
+3. **Admin → Sales & pay**: what each rep is owed. Pay them as usual, then **Record payout**. Sales with no rep
+   (bought on the website, say) can be credited to a rep; **Add sale** covers invoices and cash.
+4. Optional discount: put a Stripe promotion code on a product; every rep link pre-fills it. The Payment Link
+   must allow promotion codes.
 
 ## 5. Deploy to Vercel
 ```bash

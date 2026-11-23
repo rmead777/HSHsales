@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { CreditCard, LayoutGrid, LogOut, QrCode, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { CreditCard, LayoutGrid, LogOut, QrCode, ShieldCheck, Wallet, type LucideIcon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from './ui/Toast'
 import { BrandMark } from './BrandMark'
 import { copyText } from '../lib/share'
+import { useSaleAlerts } from '../lib/useSaleAlerts'
 import { springs } from '../lib/motion'
 import { cn } from '../lib/cn'
 
@@ -19,13 +20,16 @@ const repTabs: Tab[] = [
   { to: '/', label: 'Home', icon: LayoutGrid, end: true },
   { to: '/checkout', label: 'Checkout', icon: CreditCard },
   { to: '/qr', label: 'QR Codes', icon: QrCode },
+  { to: '/earnings', label: 'Earnings', icon: Wallet },
 ]
 
-/** Rep-facing chrome: compact arcade console for fast field selling. */
+/** Rep-facing layout: compact, thumb-first navigation for selling in person. */
 export function AppShell() {
   const { profile, isAdmin, signOut } = useAuth()
+  const { show } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
+  useSaleAlerts(!!profile?.active, isAdmin, show)
 
   const tabs: Tab[] = isAdmin
     ? [...repTabs, { to: '/admin', label: 'Admin', icon: ShieldCheck }]
@@ -91,7 +95,7 @@ function Header({
               High Score Host
             </p>
             <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-white/38">
-              {name ?? 'Rep console'}
+              {name ?? 'Sales'}
             </p>
           </div>
         </div>

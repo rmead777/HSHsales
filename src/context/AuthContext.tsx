@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // if the signup trigger hasn't created the row yet.
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, active, rep_code, created_at')
+      .select('id, email, full_name, role, active, rep_code, created_at, commission_type, commission_value')
       .eq('id', uid)
       .maybeSingle()
     if (!error) setProfile(data)

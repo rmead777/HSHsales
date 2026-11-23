@@ -26,10 +26,10 @@ const adminTabs: Tab[] = [
   { to: '/admin/links', label: 'Links', icon: LinkIcon },
   { to: '/admin/products', label: 'Products', icon: Package },
   { to: '/admin/announcements', label: 'News', icon: Megaphone },
-  { to: '/admin/sales', label: 'Sales', icon: BarChart3 },
+  { to: '/admin/sales', label: 'Sales & pay', icon: BarChart3 },
 ]
 
-/** Admin chrome: wider control room with compact, scrollable command tabs. */
+/** Admin layout: wider page with compact, scrollable section tabs. */
 export function AdminShell() {
   return (
     <div className="relative mx-auto flex min-h-dvh max-w-4xl flex-col">
@@ -48,7 +48,7 @@ export function AdminShell() {
             <div className="min-w-0">
               <p className="font-display text-lg font-extrabold tracking-[-0.03em] text-white">Admin</p>
               <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-white/38">
-                Content control room
+                Team, products, pay
               </p>
             </div>
           </div>

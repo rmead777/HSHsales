@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { AlertTriangle, Copy, CreditCard, Link as LinkIcon, QrCode, Share2, Zap } from 'lucide-react'
+import { AlertTriangle, BadgePercent, Copy, CreditCard, Link as LinkIcon, QrCode, Share2, Zap } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import { useAsync } from '../lib/useAsync'
 import { fetchActiveProducts } from '../lib/queries'
-import { safeBuildAttributedPaymentLink } from '../lib/attribution'
+import { productCheckoutUrl } from '../lib/attribution'
+import { effectiveRule, previewCommissionCents } from '../lib/commission'
+import { formatAmount } from '../lib/format'
 import { copyText, shareOrCopy } from '../lib/share'
 import { GlassCard } from '../components/ui/GlassCard'
 import { Button } from '../components/ui/Button'
@@ -30,7 +32,7 @@ export function Checkout() {
   const repCode = profile?.rep_code ?? ''
   const [qrProduct, setQrProduct] = useState<Product | null>(null)
 
-  const qrUrl = qrProduct ? safeBuildAttributedPaymentLink(qrProduct.stripe_payment_link, repCode) : null
+  const qrUrl = qrProduct ? productCheckoutUrl(qrProduct, repCode) : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,9 +48,9 @@ export function Checkout() {
           <BrandMark className="size-14 shrink-0" />
         </div>
         <p className="relative mt-4 max-w-md text-sm leading-6 text-white/58">
-          Every link and QR on this screen is stamped with{' '}
-          <span className="font-mono font-bold text-money-200 tnum">{repCode || 'your rep code'}</span>.
-          That is the quiet little machine making attribution behave.
+          Every link and QR code here carries your code{' '}
+          <span className="font-mono font-bold text-money-200 tnum">{repCode || 'your rep code'}</span>, so
+          the sale and the commission are credited to you.
         </p>
       </header>
 
@@ -64,7 +66,13 @@ export function Checkout() {
           className="flex flex-col gap-4"
         >
           {products.data.map((p) => (
-            <ProductCard key={p.id} product={p} repCode={repCode} onShowQr={() => setQrProduct(p)} />
+            <ProductCard
+              key={p.id}
+              product={p}
+              repCode={repCode}
+              earnCents={previewCommissionCents(effectiveRule(profile, p), p.price_cents)}
+              onShowQr={() => setQrProduct(p)}
+            />
           ))}
         </motion.div>
       ) : (
@@ -106,19 +114,21 @@ export function Checkout() {
 function ProductCard({
   product,
   repCode,
+  earnCents,
   onShowQr,
 }: {
   product: Product
   repCode: string
+  earnCents: number | null
   onShowQr: () => void
 }) {
   const { show } = useToast()
-  const url = safeBuildAttributedPaymentLink(product.stripe_payment_link, repCode)
+  const url = productCheckoutUrl(product, repCode)
 
   async function onCopy() {
     if (!url) return
     const r = await copyText(url)
-    show(r === 'failed' ? 'Could not copy' : 'Link copied - tagged to you', r === 'failed' ? 'error' : 'success')
+    show(r === 'failed' ? 'Could not copy' : 'Link copied. Sales through it are credited to you', r === 'failed' ? 'error' : 'success')
   }
 
   return (
@@ -134,7 +144,7 @@ function ProductCard({
           )}
           <div className="absolute left-4 top-4">
             <Badge tone="money">
-              <Zap className="size-3" /> Attributed
+              <Zap className="size-3" /> Credited to you
             </Badge>
           </div>
         </div>
@@ -151,6 +161,21 @@ function ProductCard({
           </div>
           {product.description && (
             <p className="mt-2 text-sm leading-relaxed text-white/56">{product.description}</p>
+          )}
+          {(earnCents != null || product.promo_code) && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {earnCents != null && (
+                <span className="inline-flex items-center rounded-[8px] border border-money-300/24 bg-money-400/12 px-3 py-1.5 text-sm font-bold text-money-100 tnum">
+                  You earn {formatAmount(earnCents, 'usd')} per sale
+                </span>
+              )}
+              {product.promo_code && (
+                <span className="inline-flex items-center gap-1.5 rounded-[8px] border border-demo-300/24 bg-demo-400/12 px-3 py-1.5 text-sm font-semibold text-demo-100">
+                  <BadgePercent className="size-4" />
+                  Discount code <span className="font-mono font-bold">{product.promo_code}</span> is applied
+                </span>
+              )}
+            </div>
           )}
 
           {url ? (

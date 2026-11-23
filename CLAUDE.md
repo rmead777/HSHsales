@@ -31,8 +31,12 @@ Verified integration details: [docs/INTEGRATION_REFERENCE.md](docs/INTEGRATION_R
 - `api/stripe-webhook.ts` — Vercel serverless route; verifies Stripe signature, writes `sales`
   using the **service-role** key (server-only).
 - `supabase/migrations/` — schema, RLS policies, helper functions, signup trigger, seed.
+  `0005_commissions.sql` adds commissions: rates on products (and optional per-rep rates on
+  profiles), a trigger that computes `sales.commission_cents`, `payouts`, and the `rep_earnings` view.
+- `src/lib/commission.ts` — display-only previews ("You earn $99.90 per sale"). `src/pages/Earnings.tsx` —
+  the rep's money. `src/pages/admin/AdminSales.tsx` — owed per rep, payouts, fixing and adding sales.
 
-## The two ideas you MUST get right
+## The three ideas you MUST get right
 1. **Attribution.** One Stripe Payment Link per product (`products.stripe_payment_link`). At render
    time append `?client_reference_id={rep_code}` (use `&` if the URL already has `?`). That value
    rides into the Checkout Session and the `checkout.session.completed` webhook. **Never** mint a
@@ -40,6 +44,11 @@ Verified integration details: [docs/INTEGRATION_REFERENCE.md](docs/INTEGRATION_R
 2. **The activation gate is RLS, not app logic.** `links`/`products`/`announcements` are
    `SELECT`-able only when the requesting profile has `active = true`. An inactive rep gets **zero
    rows** — that *is* the gate. Frontend "pending" UI is cosmetic; the real enforcement is in Postgres.
+3. **Commission lives in Postgres.** `trg_sales_compute_commission` computes every sale's commission:
+   the rep's own rate if set, else the product's; captured on the sale so later rate changes never
+   rewrite history; percent of (amount - tax - refunded), or a flat amount scaled by refunds; only paid
+   sales earn; an admin override wins. Balance = earned - payouts (`rep_earnings`). Never compute a
+   stored commission in JS; `src/lib/commission.ts` only previews.
 
 ## Code Conventions
 - TypeScript strict. Functional components + hooks. No class components.
@@ -60,7 +69,16 @@ Verified integration details: [docs/INTEGRATION_REFERENCE.md](docs/INTEGRATION_R
 - **Webhook raw body:** Stripe signature verification needs the **raw** request body. The webhook is a
   Vercel Web-handler (`export function POST(request: Request)`), so `await request.text()` gives the raw
   bytes — no `bodyParser` config (that's Pages-Router only). Verified via `constructEventAsync`.
-- **Idempotency:** `sales.stripe_session_id` is unique; ignore duplicate webhook deliveries.
+- **Idempotency:** `sales.stripe_session_id` is unique; ignore duplicate webhook deliveries. Refunds set an
+  absolute `amount_refunded` (from `charge.refunded`), so repeats are harmless.
+- **Webhook events:** `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+  `checkout.session.async_payment_failed`, `charge.refunded`. The webhook matches the product by Payment
+  Link URL (needs `STRIPE_SECRET_KEY`); without it, sales record with no product and an admin picks one.
+- **Multi-row inserts:** supabase-js sends NULL (not DEFAULT) for keys missing from some rows of an array
+  insert, which breaks NOT NULL columns like `sales.payment_status`. Give every row every key.
+- **Testing commissions:** `supabase start`, then run `tests/commissions.integration.test.ts` with
+  `LOCAL_SUPABASE_URL`, `LOCAL_SUPABASE_ANON_KEY`, `LOCAL_SUPABASE_SERVICE_KEY` (local only; it refuses
+  any non-localhost URL). Stripe testing: test mode only, never a live checkout.
 - **Supabase identity matters.** Project `cehlthclgguknjimimnw` ("HSHsales") is in org
   `xaalrpfnougqlhjudiam` = **"Supreme Robot, LLC"**. There are two Supabase user accounts for Ryan:
   the default `supabase login` / GitHub login resolves to the *thinner* one (orgs `Ryan` /
@@ -69,10 +87,11 @@ Verified integration details: [docs/INTEGRATION_REFERENCE.md](docs/INTEGRATION_R
   `supabase login --token <PAT-from-that-account>` (browser OAuth keeps landing on the wrong
   identity due to session stickiness). The **hosted MCP** (`.mcp.json`) is already OAuth-granted
   into that org — MCP reads verified; MCP **writes** (`apply_migration`/DDL) unverified, confirm on
-  the first migration.
+  the first migration. Proven route (2026-11-23, migration 0005): Ryan's Chrome is signed in to the
+  Supreme Robot identity, so the dashboard SQL editor works through Claude in Chrome.
 
 ## What NOT to do (from the spec §9)
 - Don't store decks/pricing/scripts/videos in the app or DB — only their URLs.
-- No native app — PWA only. No per-rep Stripe links. No commission/payout logic in V1.
+- No native app — PWA only. No per-rep Stripe links. The app records payouts; it never sends money.
 - Don't try to "secure" public Stripe links; gate the rep's *access to their attributed link* via RLS.
 - Don't build the game/leaderboard — this app only links out to its demo.
