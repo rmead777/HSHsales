@@ -29,7 +29,7 @@ export function PendingActivation() {
     setChecking(true)
     await refreshProfile()
     setChecking(false)
-    show('Still pending - an admin will activate you soon.', 'info')
+    show('Not approved yet. You can leave this page open.', 'info')
   }
 
   async function handleSignOut() {
@@ -54,13 +54,13 @@ export function PendingActivation() {
             <Hourglass className="size-7" />
           </motion.div>
 
-          <p className="mt-5 text-xs font-black uppercase tracking-[0.22em] text-warn-300">Activation gate</p>
+          <p className="mt-5 text-xs font-black uppercase tracking-[0.22em] text-warn-300">Almost there</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold tracking-[-0.04em] text-white">
-            Account pending
+            Waiting for approval
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-white/56">
-            Your account exists and is waiting for an admin activation. This screen checks
-            automatically, because refreshing manually is a tiny tax nobody asked to pay.
+            Your account is set up. An admin needs to approve it before you can sell. This page
+            opens the app on its own as soon as you're approved.
           </p>
 
           {profile?.rep_code && (

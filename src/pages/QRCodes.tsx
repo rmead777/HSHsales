@@ -48,7 +48,7 @@ export function QRCodes() {
           Your QR codes
         </h1>
         <p className="mt-4 max-w-md text-sm leading-6 text-white/58">
-          Demo, purchase, and referral paths all carry{' '}
+          Every code and link here carries{' '}
           <span className="font-mono font-bold text-demo-100 tnum">{repCode || 'your rep code'}</span>.
         </p>
       </header>
@@ -59,19 +59,18 @@ export function QRCodes() {
         <LoadError title="QR products unavailable" onRetry={products.reload} />
       ) : (
         <motion.div variants={staggerParent} initial="initial" animate="animate" className="flex flex-col gap-5">
-          <ChannelCard
-            tone="demo"
-            icon={Gamepad2}
-            eyebrow="Top of funnel"
-            title="Demo"
-            description="Let a prospect try the live game. The URL is tagged to you with ref."
-          >
-            {demoUrl ? (
+          {/* Shown only once a demo page address (VITE_DEMO_URL) is set; reps never see setup notes. */}
+          {demoUrl && (
+            <ChannelCard
+              tone="demo"
+              icon={Gamepad2}
+              eyebrow="Let them play"
+              title="Demo"
+              description="Let a prospect try the game. The link carries your code."
+            >
               <QrAndActions url={demoUrl} fileName={`demo-${repCode}`} title="Try the demo" />
-            ) : (
-              <ConfigNote text="Set VITE_DEMO_URL in the environment to enable the demo QR." />
-            )}
-          </ChannelCard>
+            </ChannelCard>
+          )}
 
           {list.length > 1 && (
             <ProductPicker products={list} selectedId={selected?.id ?? null} onSelect={setSelectedId} />
